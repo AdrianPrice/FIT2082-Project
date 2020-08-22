@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>three.js</title>
+
+    <link rel="stylesheet" href="main.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/102/three.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.2/TweenMax.min.js"></script>
+    <!--Load the Handpose model script along with its dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-cpu"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
+    <script src="https://cdn.jsdelivr.net/gh/Kevnz/stats.js/build/stats.min.js"></script>
+    <script type="module" src="launcher.js" defer></script>
+</head>
+<body>
+    <centre id="webcamPlaceholder">
+        <video id="webcamDisplay", autoplay="true">
+
+        </video>
+    </centre>
+    <div id="LoadingScreen">
+        <h1 id="loadingText">LOADING SCENE...</h1>
+    </div>
+
+    <form id="newGraph" >
+        <label for="graphTitle">Title:</label><br>
+        <input type="text" id="graphTitle" name="graphTitle"><br>
+        <label for="y1Val">1. Y-Value</label><br>
+        <input type="number" id="y1Val" name="y1Val"><br>
+        <label for="y2Val">2. Y-Value</label><br>
+        <input type="number" id="y2Val" name="y2Val"><br>
+        <label for="y3Val">3. Y-Value</label><br>
+        <input type="number" id="y3Val" name="y3Val"><br>
+        <label for="y4Val">4. Y-Value</label><br>
+        <input type="number" id="y4Val" name="y4Val"><br>
+        <label for="y5Val">5. Y-Value</label><br>
+        <input type="number" id="y5Val" name="y5Val"><br>
+        <label for="y6Val">6. Y-Value</label><br>
+        <input type="number" id="y6Val" name="y6Val"><br>
+        <label for="y7Val">7. Y-Value</label><br>
+        <input type="number" id="y7Val" name="y7Val"><br>
+        <label for="y8Val">8. Y-Value</label><br>
+        <input type="number" id="y8Val" name="y8Val"><br>
+        <button type="button" id="addGraphButton">Add Graph</button>
+    </form>
+</body>
+</html>
