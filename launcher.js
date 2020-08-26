@@ -100,14 +100,15 @@ function animate () {
 animate();
 
 function getNewGraph() {
-    const graph = new INTERFACE.BarGraph([document.getElementById('y1Val').value, 
-                                         document.getElementById('y2Val').value, 
-                                         document.getElementById('y3Val').value, 
-                                         document.getElementById('y4Val').value, 
-                                         document.getElementById('y5Val').value,
-                                         document.getElementById('y6Val').value,
-                                         document.getElementById('y7Val').value,
-                                         document.getElementById('y8Val').value]);
+    const graph = new INTERFACE.BarGraph([parseInt(document.getElementById('y1Val').value), 
+                                         parseInt(document.getElementById('y2Val').value), 
+                                         parseInt(document.getElementById('y3Val').value), 
+                                         parseInt(document.getElementById('y4Val').value), 
+                                         parseInt(document.getElementById('y5Val').value),
+                                         parseInt(document.getElementById('y6Val').value),
+                                         parseInt(document.getElementById('y7Val').value),
+                                         parseInt(document.getElementById('y8Val').value)], 
+                                         document.getElementById('graphTitle').value);
     
     document.getElementById('graphTitle').value = "";
     document.getElementById('y1Val').value = "";

@@ -163,7 +163,10 @@ export class TimeLine {
 }
 
 export class BarGraph {
-    constructor(yValues) {
+    constructor(yValues, title) {
+        this.title = document.createElement('h2');
+        this.formatTitle(title, Math.max.apply(Math, yValues));
+
         this.yValues = yValues;
         this.graph = this.createBarGraph(yValues);
     }
@@ -174,10 +177,27 @@ export class BarGraph {
 
     display(scene) {
         this.graph.forEach((shape) => shape.display(scene));
+        this.title.style.visibility = "visible";
     }
 
     hide(scene) {
         this.graph.forEach((shape) => shape.hide(scene));
+        this.title.style.visibility = "hidden";
+    }
+
+    formatTitle(title, maxY) {
+        this.title.textContent = title;
+        this.title.style.position = "absolute";
+        this.title.style.top =  (240 - maxY) + "px";
+        this.title.style.left = (450 - (8 * title.length)) + "px";
+        this.title.style.textAlign = "center";
+        this.title.style.color = "black";
+        this.title.style.fontSize = "32px";
+        this.title.style.zIndex = "1500";
+        this.title.style.fontFamily = "Arial, Helvetica, sans-serif";
+        this.title.style.visibility = "hidden";
+
+        document.body.appendChild(this.title);
     }
 
 }
@@ -296,7 +316,6 @@ export class Button {
     }
 
     onHover() {
-        console.log("HOVER");
         
     }
 
