@@ -1,7 +1,6 @@
-
-
 import * as WEBCAM from './webcamHandler.js'
 import * as INTERFACE from './script.js' 
+import * as FILTER from './OneEuroFilter.js'
 
 
 var stats = new Stats();
@@ -37,6 +36,10 @@ document.getElementById("addGraphButton").onclick = getNewGraph;
 // const graph4 = new INTERFACE.BarGraph([200, 200, 200, 200, 100, 200, 200, 200]);
 
 const scene = new INTERFACE.Scene();
+const lpFilterPointerX = new FILTER.LowPassFilter(0.3);
+const lpFilterPointerY = new FILTER.LowPassFilter(0.3);
+const lpFilterThumbX = new FILTER.LowPassFilter(0.3);
+const lpFilterThumbY = new FILTER.LowPassFilter(0.3);
 // scene.addToTimeLine(graph);
 // scene.addToTimeLine(graph2);
 // scene.addToTimeLine(graph3);
@@ -50,6 +53,24 @@ const scene = new INTERFACE.Scene();
 
 
 startTracking();
+
+// var box = INTERFACE.createSimpleBox(0, 0, 100, 20, 10);
+// scene.addToScene(box);
+// box = INTERFACE.createSimpleBox(20, 0, 120, 20, 10);
+// scene.addToScene(box);
+// box = INTERFACE.createSimpleBox(40, 0, 140, 20, 10);
+// scene.addToScene(box);
+// box = INTERFACE.createSimpleBox(60, 0, 150, 20, 10);
+// scene.addToScene(box);
+// box = INTERFACE.createSimpleBox(80, 0, 150, 20, 10);
+// scene.addToScene(box);
+// box = INTERFACE.createSimpleBox(100, 0, 80, 20, 10);
+// scene.addToScene(box);
+// box = INTERFACE.createSimpleBox(120, 0, 90, 20, 10);
+// scene.addToScene(box);
+// box = INTERFACE.createSimpleBox(140, 0, 130, 20, 10);
+// scene.addToScene(box);
+
 
 let pointerString = document.createElement('p');
 pointerString.textContent = "Pointer Position: Loading...";
@@ -65,6 +86,8 @@ async function startTracking() {
 
     WEBCAM.startWebcam();
 
+
+
     //const track = setInterval(trackHand(model, video), 1000);
     setInterval(trackHand, 10);
     //startTracking(video);
@@ -79,8 +102,17 @@ async function trackHand() {
         try {
             pointerString.textContent = "Hand Detected";
             pointerString.style.color = "green";
-           
-            INTERFACE.fingerPositionProcessor((-1 * (hands[0].landmarks[8][0] - 320)), (-1 * (hands[0].landmarks[8][1] - 240)), (-1 * (hands[0].landmarks[4][0] - 320)), (-1 * (hands[0].landmarks[4][1] - 240)))
+            //pointerString.textContent = "Position: " + lpFilter.filter((-1 * (hands[0].landmarks[8][0] - 320)));
+            INTERFACE.fingerPositionProcessor(lpFilterPointerX.filter((-1 * (hands[0].landmarks[8][0] - 320))), lpFilterPointerY.filter((-1 * (hands[0].landmarks[8][1] - 240))), lpFilterThumbX.filter((-1 * (hands[0].landmarks[4][0] - 320))), lpFilterThumbY.filter((-1 * (hands[0].landmarks[4][1] - 240))));
+            // box.position.x = lpFilterX.filter((-1 * (hands[0].landmarks[8][0] - 320)) + 320) - 320;
+            // box.position.y = lpFilterY.filter((-1 * (hands[0].landmarks[8][1] - 240)) + 240) - 240;
+
+            // box2.position.x = (-1 * (hands[0].landmarks[8][0] - 320));
+            // box2.position.y = (-1 * (hands[0].landmarks[8][1] - 240));
+
+
+            //console.log("STD:",((-1 * (hands[0].landmarks[8][0] - 320)), (-1 * (hands[0].landmarks[8][1] - 240))));
+            //console.log("LP:",(lpFilter.filter((-1 * (hands[0].landmarks[8][0] - 320))), lpFilter.filter((-1 * (hands[0].landmarks[8][1] - 240)))))
         } catch {
             pointerString.textContent = "No Hand Detected";
             pointerString.style.color = "red";

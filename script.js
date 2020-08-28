@@ -224,7 +224,7 @@ class Bar {
     }
 
     createBar() {
-        return createSimpleBox(50 + ((this.index - 1) * 40), - 100 + this.yVal / 2, this.yVal, 30, 10)
+        return createSimpleBox(50 + ((this.index - 1) * 10), - 100 + this.yVal / 2, this.yVal, 10, 10)
     }
 
     display(scene) {
@@ -260,7 +260,7 @@ class Bar {
         this.valueLabel.textContent = this.yVal;
         this.valueLabel.style.position = "absolute";
         this.valueLabel.style.top =  (170 + (-1 * (- 100 + this.yVal))) + "px";
-        this.valueLabel.style.left = (310 + (45 + ((this.index - 1) * 40))) + "px";
+        this.valueLabel.style.left = (310 + (45 + ((this.index - 1) * 10))) + "px";
         this.valueLabel.style.color = "black";
         this.valueLabel.style.fontSize = "20px";
         this.valueLabel.style.zIndex = "1500";
