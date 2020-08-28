@@ -152,5 +152,6 @@ function getNewGraph() {
     document.getElementById('y7Val').value = "";
     document.getElementById('y8Val').value = "";
 
-    scene.addToTimeLine(graph);
+    const graph2 = new INTERFACE.BarGraph([630, 550, 369, 603, 352, 406, 687, 445, 422, 454, 373, 310, 322, 401, 257, 362, 298, 265, 271, 217, 208, 234, 169, 175, 202, 112, 148, 146, 112, 113], "Vic Second Wave");
+    scene.addToTimeLine(graph2);
 }

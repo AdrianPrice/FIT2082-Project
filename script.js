@@ -165,14 +165,16 @@ export class TimeLine {
 export class BarGraph {
     constructor(yValues, title) {
         this.title = document.createElement('h2');
-        this.formatTitle(title, Math.max.apply(Math, yValues));
+        this.maxVal = Math.max.apply(Math, yValues)
+        this.formatTitle(title, 230);
 
-        this.yValues = yValues;
-        this.graph = this.createBarGraph(yValues);
+        this.yValues = this.formatValues(yValues, this.maxVal);
+        console.log(this.yValues);
+        this.graph = this.createBarGraph(this.yValues);
     }
 
     createBarGraph(yValues) {
-        return yValues.map((elem, index) => new Bar(elem, index));
+        return yValues.map((elem, index) => new Bar(elem, index, 230/this.maxVal));
     }
 
     display(scene) {
@@ -185,11 +187,19 @@ export class BarGraph {
         this.title.style.visibility = "hidden";
     }
 
+    formatValues(yValues, maxValue) {
+        const ratio = 230 / maxValue;
+
+        return yValues.map(value => parseInt(value) * ratio)
+
+
+    }
+
     formatTitle(title, maxY) {
         this.title.textContent = title;
         this.title.style.position = "absolute";
         this.title.style.top =  (240 - maxY) + "px";
-        this.title.style.left = (450 - (8 * title.length)) + "px";
+        this.title.style.left = (400 - (8 * title.length)) + "px";
         this.title.style.textAlign = "center";
         this.title.style.color = "black";
         this.title.style.fontSize = "32px";
@@ -203,10 +213,11 @@ export class BarGraph {
 }
 
 class Bar {
-    constructor(yVal, index) {
-        this.yVal = parseInt(yVal);
+    constructor(yVal, index, ratio) {
+        this.yVal = yVal;
 
         this.index = index;
+        this.ratio = ratio;
 
         this.shape = this.createBar(yVal);
 
@@ -224,7 +235,7 @@ class Bar {
     }
 
     createBar() {
-        return createSimpleBox(50 + ((this.index - 1) * 10), - 100 + this.yVal / 2, this.yVal, 10, 10)
+        return createSimpleBox(((this.index - 1) * 10), - 100 + this.yVal / 2, this.yVal, 10, 10)
     }
 
     display(scene) {
@@ -257,10 +268,10 @@ class Bar {
     }
 
     formatValueLabel() {
-        this.valueLabel.textContent = this.yVal;
+        this.valueLabel.textContent = Math.round(this.yVal / this.ratio);
         this.valueLabel.style.position = "absolute";
         this.valueLabel.style.top =  (170 + (-1 * (- 100 + this.yVal))) + "px";
-        this.valueLabel.style.left = (310 + (45 + ((this.index - 1) * 10))) + "px";
+        this.valueLabel.style.left = (260 + (45 + ((this.index - 1) * 10))) + "px";
         this.valueLabel.style.color = "black";
         this.valueLabel.style.fontSize = "20px";
         this.valueLabel.style.zIndex = "1500";
