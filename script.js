@@ -2,8 +2,8 @@ import * as LAUNCHER from './launcher.js'
 
 const objects = [];
 
-Chart.defaults.global.defaultFontFamily = 'Sans-serif';
-Chart.defaults.global.defaultFontSize = 25;
+Chart.defaults.global.defaultFontFamily = "Arial, Helvetica, sans-serif";
+Chart.defaults.global.defaultFontSize = 45;
 Chart.defaults.global.defaultFontColor = 'black';
 
 var myChart = document.getElementById('chartLegend').getContext('2d');

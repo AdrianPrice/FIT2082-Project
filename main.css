@@ -67,10 +67,10 @@ button {
 }
 #chartLegend {
     position: absolute;
-    left: 285px;
+    left: 270px;
     top: 100px;
-    height: 250px !important;
-    width: 320px !important;
+    height: 254px !important;
+    width: 340px !important;
     visibility: hidden;
 }
 
