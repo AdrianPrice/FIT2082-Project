@@ -31,6 +31,9 @@ slider.oninput = function () {
 // scene.addToTimeLine(graph3);
 // scene.addToTimeLine(graph4);
 
+const scatter = new INTERFACE.ScatterGraph([[0, 0], [50, 50], [100, 100], [200, 200], [230, 230], [250,250], [300, 300]], "Graph");
+scene.addToTimeLine(scatter);
+
 // const button = new INTERFACE.Button(40, 80, -100, -40, "Next");
 // button.displayButton(scene);
 // var objLoader = new THREE.OBJLoader();

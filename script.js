@@ -127,50 +127,6 @@ export class Scene {
     }
 }
 
-
-
-export function createSimpleBox(posX, posY, height = .8, width = 1, depth = .4) {
-    var geometry = new THREE.BoxGeometry(width, height, depth);
-    var material = new THREE.MeshLambertMaterial({color: 0xFFCC00});
-    var mesh = new THREE.Mesh(geometry, material);
-
-    mesh.position.x = posX;
-    mesh.position.y = posY;
-
-    return mesh;
-}
-
-export function createRandomBarGraph(scene) {
-    let height = Math.random() * 250 + 20;
-    let box = createSimpleBox(50, - 50 + height / 2, height, 30, 10);
-    addToScene(scene, box);
-
-    height = Math.random() * 250 + 20;
-    box = createSimpleBox(90, - 50 + height / 2, height, 30, 10);
-    addToScene(scene, box);
-
-    height = Math.random() * 250 + 20;
-    box = createSimpleBox(130, - 50 + height / 2, height, 30, 10);
-    addToScene(scene, box);
-
-    height = Math.random() * 250 + 20;
-    box = createSimpleBox(170, - 50 + height / 2, height, 30, 10);
-    addToScene(scene, box);
-
-    height = Math.random() * 250 + 20;
-    box = createSimpleBox(210, - 50 + height / 2, height, 30, 10);
-    addToScene(scene, box);
-
-    height = Math.random() * 250 + 20;
-    box = createSimpleBox(250, - 50 + height / 2, height, 30, 10);
-    addToScene(scene, box);
-
-    height = Math.random() * 250 + 20;
-    box = createSimpleBox(290, - 50 + height / 2, height, 30, 10);
-    addToScene(scene, box);
-
-}
-
 export class TimeLine {
     constructor(scene) {
         this.timeLine = [];
@@ -202,6 +158,7 @@ export class TimeLine {
                 this.timeLine[this.index].display(this.scene);
             }
             myChart.canvas.style.visibility = "visible";
+            console.log(this.timeLine[this.index].maxVal)
             var barChart = new Chart(myChart, {
                 type: 'bar', //bar, horizontal bar, pie, line, doughnut, radar, polarArea
                 data: {
@@ -376,6 +333,84 @@ class Bar {
     }
 }
 
+export class ScatterGraph {
+    constructor (xyValues, title) {
+        this.values = xyValues;
+        this.title = title;
+
+        this.maxVal = 300;
+
+        this.graph = this.createGraph();
+    }
+
+    createGraph() {
+        console.log(this.values)
+        return this.values.map(elem => new Point(elem[0], 230 * (elem[1] / 300)))
+    }
+
+    display(scene) {
+        this.graph.forEach((shape) => shape.display(scene));
+    }
+
+    hide(scene) {
+        this.graph.forEach((shape) => shape.hide(scene));
+    }
+
+}
+
+class Point {
+    constructor (xVal, yVal) {
+        this.xVal = xVal;
+        this.yVal = yVal;
+        
+        this.shape = this.createShape();
+        console.log(this.shape);
+
+        this.geometry = {
+            parameters: {
+                width: 10,
+                height: 10
+            }
+        };
+
+        this.position = {
+            y: this.shape.position.y,
+            x: this.shape.position.x
+        };
+    }
+
+    createShape() {
+        return createSimpleCircle(this.xVal, this.yVal - 100, 5);
+    }
+
+    display(scene) {
+        objects.push(this);
+
+        scene.addToScene(this.shape);
+    }
+
+    hide(scene) {
+        const index = objects.indexOf(this);
+        objects.splice(index, 1);
+        
+
+
+        scene.removeFromScene(this.shape)
+    }
+
+    onHover() {
+        this.shape.material.color.setHex( 0xFF0000);
+    }
+
+    offHover() {
+        this.shape.material.color.setHex( 0xFFCC00);
+    }
+
+    onClick() {
+        console.log("CLICKED");
+    }
+}
+
 export class Button {
     constructor(width, height, xPos, yPos, text, scene) {
         this.width = width;
@@ -462,7 +497,7 @@ export class Button {
     resetClick = (buttonObj) => () => buttonObj.allowClick = true;
 }
 
-export function createTileInterface(scene) {
+function createTileInterface(scene) {
     const box = createSimpleBox(0.5, 2);
     addToScene(scene, box);
 
@@ -482,6 +517,58 @@ export function createTileInterface(scene) {
     addToScene(scene, box7);
 }
 
+function createSimpleCircle(posX, posY, radius) {
+    var geometry = new THREE.CircleGeometry(radius, 32);
+    var material = new THREE.MeshLambertMaterial({color: 0xFFCC00});
+    var mesh = new THREE.Mesh(geometry, material);
+
+    mesh.position.x = posX;
+    mesh.position.y = posY;
+
+    return mesh;
+}
+
+function createSimpleBox(posX, posY, height = .8, width = 1, depth = .4) {
+    var geometry = new THREE.BoxGeometry(width, height, depth);
+    var material = new THREE.MeshLambertMaterial({color: 0xFFCC00});
+    var mesh = new THREE.Mesh(geometry, material);
+
+    mesh.position.x = posX;
+    mesh.position.y = posY;
+
+    return mesh;
+}
+
+function createRandomBarGraph(scene) {
+    let height = Math.random() * 250 + 20;
+    let box = createSimpleBox(50, - 50 + height / 2, height, 30, 10);
+    addToScene(scene, box);
+
+    height = Math.random() * 250 + 20;
+    box = createSimpleBox(90, - 50 + height / 2, height, 30, 10);
+    addToScene(scene, box);
+
+    height = Math.random() * 250 + 20;
+    box = createSimpleBox(130, - 50 + height / 2, height, 30, 10);
+    addToScene(scene, box);
+
+    height = Math.random() * 250 + 20;
+    box = createSimpleBox(170, - 50 + height / 2, height, 30, 10);
+    addToScene(scene, box);
+
+    height = Math.random() * 250 + 20;
+    box = createSimpleBox(210, - 50 + height / 2, height, 30, 10);
+    addToScene(scene, box);
+
+    height = Math.random() * 250 + 20;
+    box = createSimpleBox(250, - 50 + height / 2, height, 30, 10);
+    addToScene(scene, box);
+
+    height = Math.random() * 250 + 20;
+    box = createSimpleBox(290, - 50 + height / 2, height, 30, 10);
+    addToScene(scene, box);
+
+}
 
 
 export function fingerPositionProcessor(pointerX, pointerY, thumbX, thumbY) {
@@ -496,6 +583,7 @@ export function fingerPositionProcessor(pointerX, pointerY, thumbX, thumbY) {
 }
 
 function isFingerOnShape(shape, pointerX, pointerY) {
+    shape.position === undefined ? console.log(shape) : null
     const shapeX = shape.position.x;
     const shapeY = shape.position.y;
 
@@ -515,53 +603,3 @@ function isFingerOnShape(shape, pointerX, pointerY) {
     }
     return false;
 }
-
-/*
-scene = new THREE.Scene();
-
-var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 4;
-
-var renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
-renderer.setClearColor("#e5e5e5", 0);
-renderer.setSize(640, 480);
-
-document.body.appendChild(renderer.domElement);
-
-window.addEventListener('resize', () => {
-    //renderer.setSize(window.innerWidth, window.innerHeight);
-    camera.aspect = window.innerWidth / window.innerHeight;
-
-    camera.updateProjectionMatrix();
-})
-
-var geometry = new THREE.BoxGeometry(1, .7, .4);
-var material = new THREE.MeshLambertMaterial({color: 0xFFCC00});
-var mesh = new THREE.Mesh(geometry, material)
-
-mesh.position.x += 1.5;
-mesh.position.y += 2;
-// mesh.rotation.x = 0.46365;
-//mesh.rotation.y = 1.21203;
-
-scene.add(mesh);
-
-var light = new THREE.PointLight(0xFFFFFF, 1, 500);
-light.position.set(10, 2, 25);
-scene.add(light);
-
-function animate() {
-    requestAnimationFrame(animate);
-    
-    //mesh.rotation.x += 0.01;
-
-    renderer.render(scene, camera);
-}
-
-animate()
-
-this.tl = new TimelineMax({paused: true});
-this.tl.to(this.mesh.scale, 1, {y: 3, ease: Expo.easeOut});
-this.tl.to(this.mesh.rotation, 1, {y: Math.PI / 2, ease: Expo.easeOut}, "=-1");
-
-*/
