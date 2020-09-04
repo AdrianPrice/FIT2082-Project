@@ -2,6 +2,48 @@ import * as LAUNCHER from './launcher.js'
 
 const objects = [];
 
+Chart.defaults.global.defaultFontFamily = 'Sans-serif';
+Chart.defaults.global.defaultFontSize = 25;
+Chart.defaults.global.defaultFontColor = 'black';
+
+var myChart = document.getElementById('chartLegend').getContext('2d');
+console.log(myChart);
+
+var barChart = new Chart(myChart, {
+    type: 'bar', //bar, horizontal bar, pie, line, doughnut, radar, polarArea
+    data: {
+        labels:[],
+        datasets:[ {
+            label: "",
+            fillColor: "rgba(220,220,220,0.0)",
+            strokeColor: "rgba(220,220,220,0)",
+            pointColor: "rgba(220,220,220,0)",
+            pointStrokeColor: "#fff",
+            pointHighlightFill: "#fff",
+            pointHighlightStroke: "rgba(220,220,220,1)",
+            // change this data values according to the vertical scale
+            // you are looking for 
+            data: [0, 20]
+        },
+        // your real chart here
+        {
+            label: "",
+            fillColor: "rgba(220,220,220,0.2)",
+            strokeColor: "rgba(220,220,220,1)",
+            pointColor: "rgba(220,220,220,1)",
+            pointStrokeColor: "#fff",
+            pointHighlightFill: "#fff",
+            pointHighlightStroke: "rgba(220,220,220,1)",
+            data: []
+        }]
+    },
+    options:{
+        legend: {
+            display: false
+        }
+    }
+});
+
 export class Scene {
     constructor() {
         this.scene = this.createScene();
@@ -26,9 +68,10 @@ export class Scene {
      */
     createCamera() {
         const camera = new THREE.PerspectiveCamera(75, 640/480, 0.1, 2000);
-        camera.position.z = 318;
+        const cam2 = new THREE.OrthographicCamera(-320, 320, 240, -240, -1000000, 1000000 )
+        cam2.position.z = 318;
 
-        return camera;
+        return cam2;
     }
 
     /**
@@ -140,6 +183,12 @@ export class TimeLine {
     }
 
     next() {
+        console.log("NEXT");
+        //myChart.canvas.style.visibility = "hidden";
+
+        if (this.timeLine[this.index + 1] instanceof BarGraph) {
+            
+        }
         if (this.index + 1 < this.timeLine.length) {
             if (this.index === -1) {
                 this.index += 1;
@@ -152,6 +201,41 @@ export class TimeLine {
 
                 this.timeLine[this.index].display(this.scene);
             }
+            myChart.canvas.style.visibility = "visible";
+            var barChart = new Chart(myChart, {
+                type: 'bar', //bar, horizontal bar, pie, line, doughnut, radar, polarArea
+                data: {
+                    labels:[],
+                    datasets:[ {
+                        label: "",
+                        fillColor: "rgba(220,220,220,0.0)",
+                        strokeColor: "rgba(220,220,220,0)",
+                        pointColor: "rgba(220,220,220,0)",
+                        pointStrokeColor: "#fff",
+                        pointHighlightFill: "#fff",
+                        pointHighlightStroke: "rgba(220,220,220,1)",
+                        // change this data values according to the vertical scale
+                        // you are looking for 
+                        data: [0, this.timeLine[this.index].maxVal]
+                    },
+                    // your real chart here
+                    {
+                        label: "",
+                        fillColor: "rgba(220,220,220,0.2)",
+                        strokeColor: "rgba(220,220,220,1)",
+                        pointColor: "rgba(220,220,220,1)",
+                        pointStrokeColor: "#fff",
+                        pointHighlightFill: "#fff",
+                        pointHighlightStroke: "rgba(220,220,220,1)",
+                        data: []
+                    }]
+                },
+                options:{
+                    legend: {
+                        display: false
+                    }
+                }
+            });
 
             if (this.index === this.timeLine.length - 1) {
                 return true;
@@ -169,12 +253,17 @@ export class BarGraph {
         this.formatTitle(title, 230);
 
         this.yValues = this.formatValues(yValues, this.maxVal);
-        console.log(this.yValues);
+        
         this.graph = this.createBarGraph(this.yValues);
     }
 
     createBarGraph(yValues) {
-        return yValues.map((elem, index) => new Bar(elem, index, 230/this.maxVal));
+        if (this.maxVal < 100) {
+            return yValues.map((elem, index) => new Bar(elem, index, 230/(Math.ceil(this.maxVal/10) * 10)));
+        } else {
+            return yValues.map((elem, index) => new Bar(elem, index, 230/(Math.ceil(this.maxVal/100) * 100)));
+        }
+        
     }
 
     display(scene) {
@@ -188,7 +277,13 @@ export class BarGraph {
     }
 
     formatValues(yValues, maxValue) {
-        const ratio = 230 / maxValue;
+        let ratio = 0;
+        if (maxValue < 100) {
+            ratio = 230 / (Math.ceil(maxValue/10) * 10);
+        } else {
+            ratio = 230 / (Math.ceil(maxValue/100) * 100);
+        }
+        
 
         return yValues.map(value => parseInt(value) * ratio)
 
@@ -338,6 +433,7 @@ export class Button {
 
     onClick() {
         if (this.allowClick) {
+            console.log("click")
             this.scene.nextPane();
             setTimeout(this.resetColour(this.button), 1500);
             this.button.material.color.setHex( 0xFF0000);

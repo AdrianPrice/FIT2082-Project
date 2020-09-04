@@ -65,3 +65,23 @@ button {
     width: 150px;
     height: 30px;
 }
+#chartLegend {
+    position: absolute;
+    left: 285px;
+    top: 100px;
+    height: 250px !important;
+    width: 320px !important;
+    visibility: hidden;
+}
+
+#alphaSlider {
+    position: absolute;
+    top: 500px;
+    left: 20px;
+}
+#alphaText {
+    position: absolute;
+    top: 530px;
+    left: 15px;
+    font-size: 10px;
+}

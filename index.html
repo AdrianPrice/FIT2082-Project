@@ -15,7 +15,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-cpu"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
     <script src="https://cdn.jsdelivr.net/gh/Kevnz/stats.js/build/stats.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js" integrity="sha512-s+xg36jbIujB2S2VKfpGmlC3T5V2TF3lY48DX7u2r9XzGzgPsa6wTpOQA7J9iffvdeBN0q9tKzRxVxw1JviZPg==" crossorigin="anonymous"></script>
     <script type="module" src="launcher.js" defer></script>
+    <!-- <script src="GLTFLoader.js"></script> -->
+    <script src="https://rawcdn.githack.com/mrdoob/three.js/r96/examples/js/loaders/GLTFLoader.js"></script>
+    
 </head>
 <body>
     <centre id="webcamPlaceholder">
@@ -28,7 +32,7 @@
     </div>
 
     <form id="newGraph" >
-        <label for="graphTitle">Title:</label><br>
+        <!-- <label for="graphTitle">Title:</label><br>
         <input type="text" id="graphTitle" name="graphTitle"><br>
         <label for="y1Val">1. Y-Value</label><br>
         <input type="number" id="y1Val" name="y1Val"><br>
@@ -45,8 +49,15 @@
         <label for="y7Val">7. Y-Value</label><br>
         <input type="number" id="y7Val" name="y7Val"><br>
         <label for="y8Val">8. Y-Value</label><br>
-        <input type="number" id="y8Val" name="y8Val"><br>
+        <input type="number" id="y8Val" name="y8Val"><br> -->
         <button type="button" id="addGraphButton">Add Graph</button>
     </form>
+
+    <div id="alphaSlider">
+        <input type="range" min="0.001" max="1" value=".5" step="0.001" class="slider" id="myRange">
+    </div>
+    <p id="alphaText">Alpha Value: 0.5</p>
+
+    <canvas id="chartLegend"></canvas>
 </body>
 </html>
