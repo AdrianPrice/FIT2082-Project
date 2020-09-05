@@ -203,6 +203,9 @@ function getNewGraph() {
     const graph3 = new INTERFACE.BarGraph([2, 0, 2, 0, 0, 0, 0, 0, 1, 0, 19, 13, 7, 13, 9, 12, 6, 5, 11, 6, 3, 9, 7, 5, 7, 12, 13, 2, 9, 14], "New Zealand COVID Cases");
     scene.addToTimeLine(graph3);
 
-    const scatter = new INTERFACE.ScatterGraph([[10, 50],[20, 30],[80, 10],[90, 70],[100, 190],[40, 80], [100, 100], [200, 200], [190, 230]], "Graph");
+    const scatter = new INTERFACE.ScatterGraph([[10, 50],[20, 30],[80, 10],[90, 70],[100, 190],[40, 80], [100, 100], [200, 200], [190, 230], [0, 290]], "Upward Scatter");
     scene.addToTimeLine(scatter);
+
+    const scatter2 = new INTERFACE.ScatterGraph([[10, 250], [30, 270], [60, 250], [90, 130], [150, 170], [180, 40], [140, 150], [130, 180], [220, 70]], "Downward Scatter");
+    scene.addToTimeLine(scatter2);
 }

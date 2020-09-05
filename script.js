@@ -9,7 +9,7 @@ Chart.defaults.global.defaultFontColor = 'black';
 var myChart = document.getElementById('chartLegend').getContext('2d');
 
 var barChart = new Chart(myChart, {
-    type: 'bar', //bar, horizontal bar, pie, line, doughnut, radar, polarArea
+    type: 'line', //bar, horizontal bar, pie, line, doughnut, radar, polarArea
     data: {
         labels:[],
         datasets:[ {
@@ -138,7 +138,6 @@ export class TimeLine {
     }
 
     next() {
-        console.log("NEXT");
         //myChart.canvas.style.visibility = "hidden";
 
         if (this.timeLine[this.index + 1] instanceof BarGraph) {
@@ -157,9 +156,8 @@ export class TimeLine {
                 this.timeLine[this.index].display(this.scene);
             }
             myChart.canvas.style.visibility = "visible";
-            console.log(this.timeLine[this.index].maxVal)
             var barChart = new Chart(myChart, {
-                type: 'bar', //bar, horizontal bar, pie, line, doughnut, radar, polarArea
+                type: 'line', //bar, horizontal bar, pie, line, doughnut, radar, polarArea
                 data: {
                     labels:[],
                     datasets:[ {
@@ -332,7 +330,8 @@ class Bar {
 export class ScatterGraph {
     constructor (xyValues, title) {
         this.values = xyValues;
-        this.title = title;
+        this.title = document.createElement('h2');
+        this.formatTitle(title, 230);
 
         this.maxVal = 300;
 
@@ -356,12 +355,16 @@ export class ScatterGraph {
 
     display(scene) {
         this.graph.forEach((shape) => shape.display(scene));
+        this.title.style.visibility = "visible";
 
         scene.addToScene(this.trendline);
     }
 
     hide(scene) {
         this.graph.forEach((shape) => shape.hide(scene));
+        this.title.style.visibility = "hidden";
+
+        scene.removeFromScene(this.trendline);
     }
 
     calculateTrendlineSlope() {
@@ -375,7 +378,7 @@ export class ScatterGraph {
     }
 
     createTrendline() {
-        const line = createSimpleBox(this.minX[0] + (this.trendlineLength / 2) * Math.sin(this.trendlineSlope), (230 * ((this.trendlineSlope * ((this.maxX[0] + this.minX[0])/2)) + this.trendlineIntercept))/300 - 100, 2, this.trendlineLength, 5);
+        const line = createSimpleBox(this.minX[0] + ((this.trendlineLength / 2) * Math.sin((Math.PI/2) - Math.atan(this.trendlineSlope))), (230 * ((this.trendlineSlope * ((this.maxX[0] + this.minX[0])/2)) + this.trendlineIntercept))/300 - 100, 2, this.trendlineLength, 5);
         
         line.material.color.setHex( 0x808080);
 
@@ -384,9 +387,25 @@ export class ScatterGraph {
     }
 
     calculateTrendlineLength() {
-        console.log(this.maxX);
-        return Math.sqrt(Math.pow((this.maxX[0] - this.minX[0]),2) + Math.pow((this.maxY[1] - this.minY[1]),2))
+        //return (Math.sqrt(Math.pow((this.maxX[0] - this.minX[0]),2) + Math.pow((this.maxY[1] - this.minY[1]),2)))
+        return (Math.sqrt(Math.pow((this.maxX[0] - this.minX[0]),2) + Math.pow(((this.trendlineSlope * this.maxX[0]) + this.trendlineIntercept) - ((this.trendlineSlope * this.minX[0]) + this.trendlineIntercept),2)))
     }
+
+    formatTitle(title, maxY) {
+        this.title.textContent = title;
+        this.title.style.position = "absolute";
+        this.title.style.top =  (240 - maxY) + "px";
+        this.title.style.left = (400 - (8 * title.length)) + "px";
+        this.title.style.textAlign = "center";
+        this.title.style.color = "black";
+        this.title.style.fontSize = "32px";
+        this.title.style.zIndex = "1500";
+        this.title.style.fontFamily = "Arial, Helvetica, sans-serif";
+        this.title.style.visibility = "hidden";
+
+        document.body.appendChild(this.title);
+    }
+
 
 }
 
@@ -499,7 +518,6 @@ export class Button {
 
     onClick() {
         if (this.allowClick) {
-            console.log("click")
             this.scene.nextPane();
             setTimeout(this.resetColour(this.button), 1500);
             this.button.material.color.setHex( 0xFF0000);
