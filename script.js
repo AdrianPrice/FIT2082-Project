@@ -7,7 +7,6 @@ Chart.defaults.global.defaultFontSize = 45;
 Chart.defaults.global.defaultFontColor = 'black';
 
 var myChart = document.getElementById('chartLegend').getContext('2d');
-console.log(myChart);
 
 var barChart = new Chart(myChart, {
     type: 'bar', //bar, horizontal bar, pie, line, doughnut, radar, polarArea
@@ -171,11 +170,8 @@ export class TimeLine {
                         pointStrokeColor: "#fff",
                         pointHighlightFill: "#fff",
                         pointHighlightStroke: "rgba(220,220,220,1)",
-                        // change this data values according to the vertical scale
-                        // you are looking for 
                         data: [0, this.timeLine[this.index].maxVal]
                     },
-                    // your real chart here
                     {
                         label: "",
                         fillColor: "rgba(220,220,220,0.2)",
@@ -340,20 +336,56 @@ export class ScatterGraph {
 
         this.maxVal = 300;
 
+        this.minX = this.values.reduce((acc, currenElem) => currenElem[0] < acc[0] ? currenElem : acc)
+        this.maxX = this.values.reduce((acc, currenElem) => currenElem[0] > acc[0] ? currenElem : acc)
+
+        this.minY = this.values.reduce((acc, currenElem) => currenElem[1] < acc[1] ? currenElem : acc)
+        this.maxY = this.values.reduce((acc, currenElem) => currenElem[1] > acc[1] ? currenElem : acc)
+
         this.graph = this.createGraph();
+
+        this.trendlineSlope = this.calculateTrendlineSlope();
+        this.trendlineIntercept = this.calculateTrendlineIntercept();
+        this.trendlineLength = this.calculateTrendlineLength();
+        this.trendline = this.createTrendline();
     }
 
     createGraph() {
-        console.log(this.values)
         return this.values.map(elem => new Point(elem[0], 230 * (elem[1] / 300)))
     }
 
     display(scene) {
         this.graph.forEach((shape) => shape.display(scene));
+
+        scene.addToScene(this.trendline);
     }
 
     hide(scene) {
         this.graph.forEach((shape) => shape.hide(scene));
+    }
+
+    calculateTrendlineSlope() {
+        const top = (this.values.length * this.values.reduce((acc, currentElem) => acc + (currentElem[0] * currentElem[1]), 0)) - (this.values.reduce((acc, currentElem) => acc + currentElem[0], 0) * this.values.reduce((acc, currentElem) => acc + currentElem[1], 0))
+        const bottom = (this.values.length * this.values.reduce((acc, currentElem) => acc + (currentElem[0] * currentElem[0]), 0)) - Math.pow(this.values.reduce((acc, currentElem) => acc + currentElem[0], 0), 2)
+        return top / bottom;
+    }
+
+    calculateTrendlineIntercept() {
+        return (this.values.reduce((acc, currentElem) => acc + currentElem[1], 0) - this.trendlineSlope * this.values.reduce((acc, currentElem) => acc + currentElem[0], 0)) / this.values.length
+    }
+
+    createTrendline() {
+        const line = createSimpleBox(this.minX[0] + (this.trendlineLength / 2) * Math.sin(this.trendlineSlope), (230 * ((this.trendlineSlope * ((this.maxX[0] + this.minX[0])/2)) + this.trendlineIntercept))/300 - 100, 2, this.trendlineLength, 5);
+        
+        line.material.color.setHex( 0x808080);
+
+        line.rotation.z = Math.atan(this.trendlineSlope);
+        return line;
+    }
+
+    calculateTrendlineLength() {
+        console.log(this.maxX);
+        return Math.sqrt(Math.pow((this.maxX[0] - this.minX[0]),2) + Math.pow((this.maxY[1] - this.minY[1]),2))
     }
 
 }
@@ -364,7 +396,6 @@ class Point {
         this.yVal = yVal;
         
         this.shape = this.createShape();
-        console.log(this.shape);
 
         this.geometry = {
             parameters: {

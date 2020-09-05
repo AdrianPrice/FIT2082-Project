@@ -31,9 +31,6 @@ slider.oninput = function () {
 // scene.addToTimeLine(graph3);
 // scene.addToTimeLine(graph4);
 
-const scatter = new INTERFACE.ScatterGraph([[0, 0], [50, 50], [100, 100], [200, 200], [230, 230], [250,250], [300, 300]], "Graph");
-scene.addToTimeLine(scatter);
-
 // const button = new INTERFACE.Button(40, 80, -100, -40, "Next");
 // button.displayButton(scene);
 // var objLoader = new THREE.OBJLoader();
@@ -55,28 +52,28 @@ scene.addToTimeLine(scatter);
 
 //INTERFACE.render(renderer, scene, camera);
 
-var loader = new THREE.GLTFLoader();
-var modelVIC;
-var modelNSW;
-loader.load(
-	// resource URL
-	'victoria.glb',
-	// called when the resource is loaded
-	function ( gltf ) {
-        modelVIC = gltf.scene;
+// var loader = new THREE.GLTFLoader();
+// var modelVIC;
+// var modelNSW;
+// loader.load(
+// 	// resource URL
+// 	'victoria.glb',
+// 	// called when the resource is loaded
+// 	function ( gltf ) {
+//         modelVIC = gltf.scene;
 
-        modelVIC.traverse((object) => {
-            if (object.isMesh) {
-                object.material.color.set( 0xFFCC00 )
-            }
-        })
+//         modelVIC.traverse((object) => {
+//             if (object.isMesh) {
+//                 object.material.color.set( 0xFFCC00 )
+//             }
+//         })
 
-        gltf.scene.rotation.x = 90;
-        gltf.scene.position.x -= 100;
-        console.log(gltf.scene);
-		scene.addToScene( gltf.scene );
+//         gltf.scene.rotation.x = 90;
+//         gltf.scene.position.x -= 100;
+//         console.log(gltf.scene);
+// 		scene.addToScene( gltf.scene );
 
-   })
+//    })
     
     // loader.load(
     //     // resource URL
@@ -205,4 +202,7 @@ function getNewGraph() {
 
     const graph3 = new INTERFACE.BarGraph([2, 0, 2, 0, 0, 0, 0, 0, 1, 0, 19, 13, 7, 13, 9, 12, 6, 5, 11, 6, 3, 9, 7, 5, 7, 12, 13, 2, 9, 14], "New Zealand COVID Cases");
     scene.addToTimeLine(graph3);
+
+    const scatter = new INTERFACE.ScatterGraph([[10, 50],[20, 30],[80, 10],[90, 70],[100, 190],[40, 80], [100, 100], [200, 200], [190, 230]], "Graph");
+    scene.addToTimeLine(scatter);
 }
