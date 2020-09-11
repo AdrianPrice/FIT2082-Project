@@ -8,7 +8,6 @@ stats.showPanel(0);
 
 document.body.appendChild(stats.dom);
 
-document.getElementById("addGraphButton").onclick = getNewGraph;
 
 const slider = document.getElementById("myRange");
 
@@ -196,7 +195,9 @@ function getNewGraph() {
     // document.getElementById('y6Val').value = "";
     // document.getElementById('y7Val').value = "";
     // document.getElementById('y8Val').value = "";
-
+    const graph = new INTERFACE.BarGraph([200, 250, 300, 120], "Test")
+    scene.addToTimeLine(graph);
+    
     const graph2 = new INTERFACE.BarGraph([630, 550, 369, 603, 352, 406, 687, 445, 422, 454, 373, 310, 322, 401, 257, 362, 298, 265, 271, 217, 208, 234, 169, 175, 202, 112, 148, 146, 112, 113], "Victoria COVID Cases");
     scene.addToTimeLine(graph2);
 
@@ -206,6 +207,17 @@ function getNewGraph() {
     const scatter = new INTERFACE.ScatterGraph([[10, 50],[20, 30],[80, 10],[90, 70],[100, 190],[40, 80], [100, 100], [200, 200], [190, 230], [0, 290]], "Upward Scatter");
     scene.addToTimeLine(scatter);
 
-    const scatter2 = new INTERFACE.ScatterGraph([[10, 250], [30, 270], [60, 250], [90, 130], [150, 170], [180, 40], [140, 150], [130, 180], [220, 70]], "Downward Scatter");
+    const scatter2 = new INTERFACE.ScatterGraph([[10, 200],[20, 150],[80, 100],[90, 170],[100, 190],[40, 220], [100, 190], [200, 200], [190, 230], [0, 290], [10, 250], [30, 270], [60, 250], [90, 130], [150, 170], [25, 178], [64, 154], [174, 203], [180, 80], [120, 25], [38, 220], [180, 40], [140, 150], [130, 180], [220, 70], [250, 60], [270, 25], [260, 35], [120, 200]], "Downward Scatter");
     scene.addToTimeLine(scatter2);
+}
+
+export function addGraphFromFile(graphData, title, type) {
+    let graph;
+    if (type === 'bar') {
+        graph = new INTERFACE.BarGraph(graphData, title)
+    } else if (type === 'scatter') {
+        graph = new INTERFACE.ScatterGraph(graphData, title)
+    }
+    
+    scene.addToTimeLine(graph)
 }

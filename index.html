@@ -17,6 +17,7 @@
     <script src="https://cdn.jsdelivr.net/gh/Kevnz/stats.js/build/stats.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js" integrity="sha512-s+xg36jbIujB2S2VKfpGmlC3T5V2TF3lY48DX7u2r9XzGzgPsa6wTpOQA7J9iffvdeBN0q9tKzRxVxw1JviZPg==" crossorigin="anonymous"></script>
     <script type="module" src="launcher.js" defer></script>
+    <script type="module" src="fileHandler.js" defer></script>
     <!-- <script src="GLTFLoader.js"></script> -->
     <script src="https://rawcdn.githack.com/mrdoob/three.js/r96/examples/js/loaders/GLTFLoader.js"></script>
     
@@ -50,14 +51,30 @@
         <input type="number" id="y7Val" name="y7Val"><br>
         <label for="y8Val">8. Y-Value</label><br>
         <input type="number" id="y8Val" name="y8Val"><br> -->
-        <button type="button" id="addGraphButton">Add Graph</button>
+        <!-- <button type="button" id="addGraphButton">Add Graph</button> -->
     </form>
+
+    <a id="downloadLink" href="Sample data.zip" download="Sample data.zip">Download sample files</a>
 
     <div id="alphaSlider">
         <input type="range" min="0.001" max="1" value=".5" step="0.001" class="slider" id="myRange">
     </div>
     <p id="alphaText">Alpha Value: 0.5</p>
 
+    <p id="successMessage">Success</p>
+
     <canvas id="chartLegend"></canvas>
+    <form id = "graphInput">
+        <h2>Input Graph from CSV</h2>
+        <h6 id="sectionTitle">Graph Type</h6>
+        <input type="radio" id="Bar" name="gender" value="Bar">
+        <label for="Bar">Bar</label><br>
+        <input type="radio" id="Scatter" name="gender" value="Scatter">
+        <label for="Scatter">Scatter</label><br>
+        <h6 id="sectionTitle">Graph Title</h6>
+        <input type="text" id="titleInput">
+        <input type="file" id="input">
+        <input type="button" id="submitGraph" value="Submit">
+    </form>
 </body>
 </html>

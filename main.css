@@ -66,10 +66,17 @@ button {
     height: 30px;
 }
 #chartLegend {
+    background-color: black;
+    opacity: 0.4;
+    border-radius: 20px;
+    padding: 50px;
+    padding-right: 30px;
+    padding-bottom: 7px;
+    padding-left: 40px;
     position: absolute;
-    left: 270px;
-    top: 100px;
-    height: 254px !important;
+    left: 225px;
+    top: 50px;
+    height: 255px !important;
     width: 340px !important;
     visibility: hidden;
 }
@@ -84,4 +91,43 @@ button {
     top: 530px;
     left: 15px;
     font-size: 10px;
+}
+
+#graphInput {
+    position: absolute;
+    left: 660px;
+    top: 40px;
+    border-style: solid;
+    border-color: black;
+    border-width: 2px;
+    padding: 21px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+input {
+    display: inline-block;
+}
+
+#input {
+    display: block;
+}
+
+#sectionTitle {
+    margin-bottom: 0px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: medium;
+}
+
+#downloadLink {
+    position: absolute;
+    top: 450px;
+    left: 660px;
+}
+
+#successMessage {
+    position: absolute;
+    top: 352px;
+    left: 750px;
+    font-size: small;
+    visibility: hidden;
 }

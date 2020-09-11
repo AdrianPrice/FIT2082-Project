@@ -4,12 +4,12 @@ const objects = [];
 
 Chart.defaults.global.defaultFontFamily = "Arial, Helvetica, sans-serif";
 Chart.defaults.global.defaultFontSize = 45;
-Chart.defaults.global.defaultFontColor = 'black';
+Chart.defaults.global.defaultFontColor = 'white';
 
 var myChart = document.getElementById('chartLegend').getContext('2d');
 
 var barChart = new Chart(myChart, {
-    type: 'line', //bar, horizontal bar, pie, line, doughnut, radar, polarArea
+    type: 'bar', //bar, horizontal bar, pie, line, doughnut, radar, polarArea
     data: {
         labels:[],
         datasets:[ {
@@ -157,7 +157,7 @@ export class TimeLine {
             }
             myChart.canvas.style.visibility = "visible";
             var barChart = new Chart(myChart, {
-                type: 'line', //bar, horizontal bar, pie, line, doughnut, radar, polarArea
+                type: 'bar', //bar, horizontal bar, pie, line, doughnut, radar, polarArea
                 data: {
                     labels:[],
                     datasets:[ {
@@ -184,10 +184,10 @@ export class TimeLine {
                 options:{
                     legend: {
                         display: false
-                    }
+                    },
                 }
             });
-
+            console.log(barChart.scales)
             if (this.index === this.timeLine.length - 1) {
                 return true;
             }
@@ -206,13 +206,16 @@ export class BarGraph {
         this.yValues = this.formatValues(yValues, this.maxVal);
         
         this.graph = this.createBarGraph(this.yValues);
+        
+        this.yAxis = createSimpleBox(-22,16, 240, 4, 10, 0xFFFFFF);
+        this.xAxis = createSimpleBox(132, -102, 4, 308, 10, 0xFFFFFF);
     }
 
     createBarGraph(yValues) {
         if (this.maxVal < 100) {
-            return yValues.map((elem, index) => new Bar(elem, index, 230/(Math.ceil(this.maxVal/10) * 10)));
+            return yValues.map((elem, index) => new Bar(elem, index, 230/(Math.ceil(this.maxVal/10) * 10), 305/(this.yValues.length)));
         } else {
-            return yValues.map((elem, index) => new Bar(elem, index, 230/(Math.ceil(this.maxVal/100) * 100)));
+            return yValues.map((elem, index) => new Bar(elem, index, 230/(Math.ceil(this.maxVal/100) * 100), 305/(this.yValues.length)));
         }
         
     }
@@ -220,11 +223,17 @@ export class BarGraph {
     display(scene) {
         this.graph.forEach((shape) => shape.display(scene));
         this.title.style.visibility = "visible";
+
+        scene.addToScene(this.yAxis);
+        scene.addToScene(this.xAxis);
     }
 
     hide(scene) {
         this.graph.forEach((shape) => shape.hide(scene));
         this.title.style.visibility = "hidden";
+
+        scene.removeFromScene(this.xAxis);
+        scene.removeFromScene(this.yAxis);
     }
 
     formatValues(yValues, maxValue) {
@@ -244,11 +253,11 @@ export class BarGraph {
     formatTitle(title, maxY) {
         this.title.textContent = title;
         this.title.style.position = "absolute";
-        this.title.style.top =  (240 - maxY) + "px";
-        this.title.style.left = (400 - (8 * title.length)) + "px";
+        this.title.style.top =  (35) + "px";
+        this.title.style.left = (240) + "px";
         this.title.style.textAlign = "center";
-        this.title.style.color = "black";
-        this.title.style.fontSize = "32px";
+        this.title.style.color = "white";
+        this.title.style.fontSize = "28px";
         this.title.style.zIndex = "1500";
         this.title.style.fontFamily = "Arial, Helvetica, sans-serif";
         this.title.style.visibility = "hidden";
@@ -259,11 +268,12 @@ export class BarGraph {
 }
 
 class Bar {
-    constructor(yVal, index, ratio) {
+    constructor(yVal, index, ratio, width) {
         this.yVal = yVal;
 
         this.index = index;
         this.ratio = ratio;
+        this.width = width;
 
         this.shape = this.createBar(yVal);
 
@@ -281,7 +291,8 @@ class Bar {
     }
 
     createBar() {
-        return createSimpleBox(((this.index - 1) * 10), - 100 + this.yVal / 2, this.yVal, 10, 10)
+        console.log((((this.index - 1)) * this.width) + (this.width/2) - 10)
+        return createSimpleBox((((this.index)) * this.width) + (this.width/2) - 20, - 100 + this.yVal / 2, this.yVal, this.width, 10)
     }
 
     display(scene) {
@@ -300,12 +311,12 @@ class Bar {
     }
 
     onHover() {
-        this.shape.material.color.setHex( 0xFF0000);
+        this.shape.material.color.setHex( 0xFFFFFF);
         this.valueLabel.style.visibility = "visible";
     }
 
     offHover() {
-        this.shape.material.color.setHex( 0xFFCC00);
+        this.shape.material.color.setHex( 0x3EF4FA);
         this.valueLabel.style.visibility = "hidden";
     }
 
@@ -317,8 +328,8 @@ class Bar {
         this.valueLabel.textContent = Math.round(this.yVal / this.ratio);
         this.valueLabel.style.position = "absolute";
         this.valueLabel.style.top =  (170 + (-1 * (- 100 + this.yVal))) + "px";
-        this.valueLabel.style.left = (260 + (45 + ((this.index - 1) * 10))) + "px";
-        this.valueLabel.style.color = "black";
+        this.valueLabel.style.left = (260 + (45 + ((this.index - 1) * this.width + ((3 * this.width)/2) - 20))) + "px";
+        this.valueLabel.style.color = "white";
         this.valueLabel.style.fontSize = "20px";
         this.valueLabel.style.zIndex = "1500";
         this.valueLabel.style.visibility = "hidden";
@@ -333,24 +344,47 @@ export class ScatterGraph {
         this.title = document.createElement('h2');
         this.formatTitle(title, 230);
 
-        this.maxVal = 300;
+        this.maxVal = this.values.reduce((acc, currenElem) => currenElem[1] > acc[1] ? currenElem : acc);
 
         this.minX = this.values.reduce((acc, currenElem) => currenElem[0] < acc[0] ? currenElem : acc)
         this.maxX = this.values.reduce((acc, currenElem) => currenElem[0] > acc[0] ? currenElem : acc)
 
-        this.minY = this.values.reduce((acc, currenElem) => currenElem[1] < acc[1] ? currenElem : acc)
-        this.maxY = this.values.reduce((acc, currenElem) => currenElem[1] > acc[1] ? currenElem : acc)
+        this.ratioX = 0;
+        this.ratioY = 0;
+
+        this.formatValues();
+        
 
         this.graph = this.createGraph();
+        
 
         this.trendlineSlope = this.calculateTrendlineSlope();
         this.trendlineIntercept = this.calculateTrendlineIntercept();
         this.trendlineLength = this.calculateTrendlineLength();
         this.trendline = this.createTrendline();
+
+        this.yAxis = createSimpleBox(-22,16, 240, 4, 10, 0xFFFFFF);
+        this.xAxis = createSimpleBox(132, -102, 4, 308, 10, 0xFFFFFF);
     }
 
     createGraph() {
-        return this.values.map(elem => new Point(elem[0], 230 * (elem[1] / 300)))
+        return this.values.map(elem => new Point(elem[0], elem[1]))
+    }
+
+    formatValues () {
+        if (this.maxVal[1] < 100) {
+            this.ratioY = 230 / (Math.ceil(this.maxVal[1]/10) * 10);
+        } else {
+            this.ratioY = 230 / (Math.ceil(this.maxVal[1]/100) * 100);
+        }
+
+        if (this.maxX[0] < 100) {
+            this.ratioX = 280 / (Math.ceil(this.maxX[0]/10) * 10);
+        } else {
+            this.ratioX = 280 / (Math.ceil(this.maxX[0]/100) * 100);
+        }
+
+        this.values = this.values.map(([x_val, y_val]) => [parseInt(x_val) * this.ratioX, parseInt(y_val) * this.ratioY])
     }
 
     display(scene) {
@@ -358,6 +392,9 @@ export class ScatterGraph {
         this.title.style.visibility = "visible";
 
         scene.addToScene(this.trendline);
+
+        scene.addToScene(this.xAxis);
+        scene.addToScene(this.yAxis);
     }
 
     hide(scene) {
@@ -365,6 +402,9 @@ export class ScatterGraph {
         this.title.style.visibility = "hidden";
 
         scene.removeFromScene(this.trendline);
+
+        scene.removeFromScene(this.xAxis);
+        scene.removeFromScene(this.yAxis);
     }
 
     calculateTrendlineSlope() {
@@ -378,9 +418,9 @@ export class ScatterGraph {
     }
 
     createTrendline() {
-        const line = createSimpleBox(this.minX[0] + ((this.trendlineLength / 2) * Math.sin((Math.PI/2) - Math.atan(this.trendlineSlope))), (230 * ((this.trendlineSlope * ((this.maxX[0] + this.minX[0])/2)) + this.trendlineIntercept))/300 - 100, 2, this.trendlineLength, 5);
+        const line = createSimpleBox(this.minX[0] + ((this.trendlineLength / 2) * Math.sin((Math.PI/2) - Math.atan(this.trendlineSlope))), (230 * ((this.trendlineSlope * ((this.maxX[0] + this.minX[0])/2)) + this.trendlineIntercept))/300 - 100, 5, this.trendlineLength, 5);
         
-        line.material.color.setHex( 0x808080);
+        line.material.color.setHex( 0xffffff);
 
         line.rotation.z = Math.atan(this.trendlineSlope);
         return line;
@@ -388,17 +428,17 @@ export class ScatterGraph {
 
     calculateTrendlineLength() {
         //return (Math.sqrt(Math.pow((this.maxX[0] - this.minX[0]),2) + Math.pow((this.maxY[1] - this.minY[1]),2)))
-        return (Math.sqrt(Math.pow((this.maxX[0] - this.minX[0]),2) + Math.pow(((this.trendlineSlope * this.maxX[0]) + this.trendlineIntercept) - ((this.trendlineSlope * this.minX[0]) + this.trendlineIntercept),2)))
+        return (Math.sqrt(Math.pow(((this.maxX[0] * this.ratioX) - (this.minX[0] * this.ratioX)),2) + Math.pow(((this.trendlineSlope * (this.maxX[0] * this.ratioX)) + this.trendlineIntercept) - ((this.trendlineSlope * (this.minX[0] * this.ratioX)) + this.trendlineIntercept),2)))
     }
 
     formatTitle(title, maxY) {
         this.title.textContent = title;
         this.title.style.position = "absolute";
-        this.title.style.top =  (240 - maxY) + "px";
-        this.title.style.left = (400 - (8 * title.length)) + "px";
+        this.title.style.top =  (35) + "px";
+        this.title.style.left = (240) + "px";
         this.title.style.textAlign = "center";
-        this.title.style.color = "black";
-        this.title.style.fontSize = "32px";
+        this.title.style.color = "white";
+        this.title.style.fontSize = "28px";
         this.title.style.zIndex = "1500";
         this.title.style.fontFamily = "Arial, Helvetica, sans-serif";
         this.title.style.visibility = "hidden";
@@ -453,7 +493,7 @@ class Point {
     }
 
     offHover() {
-        this.shape.material.color.setHex( 0xFFCC00);
+        this.shape.material.color.setHex( 0x3EF4FA);
     }
 
     onClick() {
@@ -487,7 +527,7 @@ export class Button {
     }
 
     createButton(position, width, height) {
-        return createSimpleBox(position.x , position.y - (height / 2), height, width, 10)
+        return createSimpleBox(position.x , position.y - (height / 2), height, width, 10, 0x808080)
     }
 
     display(scene) {
@@ -514,17 +554,17 @@ export class Button {
         //this.button.material.color.setHex( 0xFFCC00);
     }
 
-    resetColour = (button) => () => button.material.color.setHex( 0xFFCC00);
+    resetColour (button){ return () => button.material.color.setHex( 0x808080);}
 
     onClick() {
         if (this.allowClick) {
             this.scene.nextPane();
-            setTimeout(this.resetColour(this.button), 1500);
-            this.button.material.color.setHex( 0xFF0000);
+            setTimeout(this.resetColour(this.button), 500);
+            this.button.material.color.setHex( 0xA9A9A9);
 
             this.allowClick = false;
 
-            setTimeout(this.resetClick(this), 1500);
+            setTimeout(this.resetClick(this), 500);
         }
 
         
@@ -535,7 +575,7 @@ export class Button {
         this.buttonLabel.style.position = "absolute";
         this.buttonLabel.style.top = (240 - this.position.y - (this.height / 2)) + "px";
         this.buttonLabel.style.left = (280 + this.position.x + (this.width / 2)) + "px";
-        this.buttonLabel.style.color = "black";
+        this.buttonLabel.style.color = "white";
         this.buttonLabel.style.fontSize = "20px";
         this.buttonLabel.style.zIndex = "1500";
         this.buttonLabel.style.visibility = "hidden";
@@ -543,7 +583,7 @@ export class Button {
         document.body.appendChild(this.buttonLabel);
     }
 
-    resetClick = (buttonObj) => () => buttonObj.allowClick = true;
+    resetClick (buttonObj) {return () => buttonObj.allowClick = true};
 }
 
 function createTileInterface(scene) {
@@ -577,9 +617,9 @@ function createSimpleCircle(posX, posY, radius) {
     return mesh;
 }
 
-function createSimpleBox(posX, posY, height = .8, width = 1, depth = .4) {
+function createSimpleBox(posX, posY, height = .8, width = 1, depth = .4, color = 0x3EF4FA) {
     var geometry = new THREE.BoxGeometry(width, height, depth);
-    var material = new THREE.MeshLambertMaterial({color: 0xFFCC00});
+    var material = new THREE.MeshLambertMaterial({color: color});
     var mesh = new THREE.Mesh(geometry, material);
 
     mesh.position.x = posX;
