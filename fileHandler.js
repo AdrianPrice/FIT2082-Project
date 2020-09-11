@@ -31,14 +31,15 @@ function readFileContent(file) {
 function formatData(data) {
   if (document.getElementById("Bar").checked) {
     
-    return data.split('\n');
+    let dataVal = data.split('\n');
+    dataVal = dataVal.map(elem => elem.split(","))
+    dataVal = dataVal.map(elem => [elem[0], parseInt(elem[1])])
+    return dataVal
   } else {
     
     let dataVal = data.split('\n');
-    console.log(dataVal)
     dataVal = dataVal.map(elem => elem.split(","))
     dataVal = dataVal.map(elem => [parseInt(elem[0]), parseInt(elem[1])])
-    console.log(dataVal)
     return dataVal
   }
 }

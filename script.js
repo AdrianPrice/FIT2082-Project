@@ -4,6 +4,7 @@ const objects = [];
 
 Chart.defaults.global.defaultFontFamily = "Arial, Helvetica, sans-serif";
 Chart.defaults.global.defaultFontSize = 45;
+Chart.defaults.global.defaultFontStyle = 'normal'
 Chart.defaults.global.defaultFontColor = 'white';
 
 var myChart = document.getElementById('chartLegend').getContext('2d');
@@ -187,7 +188,6 @@ export class TimeLine {
                     },
                 }
             });
-            console.log(barChart.scales)
             if (this.index === this.timeLine.length - 1) {
                 return true;
             }
@@ -198,17 +198,23 @@ export class TimeLine {
 }
 
 export class BarGraph {
-    constructor(yValues, title) {
+    constructor(values, title) {
         this.title = document.createElement('h2');
-        this.maxVal = Math.max.apply(Math, yValues)
+        this.maxVal = Math.max.apply(Math, values.map(elem => elem[1]))
         this.formatTitle(title, 230);
 
-        this.yValues = this.formatValues(yValues, this.maxVal);
-        
+        this.yValues = this.formatValues(values.map(elem => elem[1]), this.maxVal);
+        this.xValues = values.map(elem => elem[0]);
+        console.log(this.xValues)
+
         this.graph = this.createBarGraph(this.yValues);
         
         this.yAxis = createSimpleBox(-22,16, 240, 4, 10, 0xFFFFFF);
         this.xAxis = createSimpleBox(132, -102, 4, 308, 10, 0xFFFFFF);
+
+        this.xLabels = this.formatLabels();
+
+        console.log(this.xLabels)
     }
 
     createBarGraph(yValues) {
@@ -220,12 +226,54 @@ export class BarGraph {
         
     }
 
+    formatLabels() {
+        let values = [];
+
+        var label = document.createElement('h6');
+        values.push(this.createLabel(label, this.xValues[this.xValues.length - 1], 580))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, this.xValues[Math.round(this.xValues.length - ((1/5) * this.xValues.length))], 532))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, this.xValues[Math.round(this.xValues.length - ((2/5) * this.xValues.length))], 474))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, this.xValues[Math.round(this.xValues.length - ((3/5) * this.xValues.length))], 416))
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, this.xValues[Math.round(this.xValues.length - ((4/5) * this.xValues.length))], 358))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, this.xValues[0], 300))
+
+        return values;
+    }
+
+    createLabel(label, text, position) {
+        label.textContent = text;
+        label.style.position = "absolute";
+        label.style.top =  (317) + "px";
+        label.style.left = (position) + "px";
+        label.style.textAlign = "center";
+        label.style.color = "white";
+        label.style.fontSize = "12px";
+        label.style.zIndex = "2000";
+        label.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label.style.visibility = "hidden";
+
+        document.body.appendChild(label);
+
+        return label;
+    }
+
     display(scene) {
         this.graph.forEach((shape) => shape.display(scene));
         this.title.style.visibility = "visible";
 
         scene.addToScene(this.yAxis);
         scene.addToScene(this.xAxis);
+
+        this.xLabels.forEach(label => label.style.visibility = "visible")
     }
 
     hide(scene) {
@@ -234,6 +282,8 @@ export class BarGraph {
 
         scene.removeFromScene(this.xAxis);
         scene.removeFromScene(this.yAxis);
+
+        this.xLabels.forEach(label => label.style.visibility = "hidden")
     }
 
     formatValues(yValues, maxValue) {
@@ -291,7 +341,6 @@ class Bar {
     }
 
     createBar() {
-        console.log((((this.index - 1)) * this.width) + (this.width/2) - 10)
         return createSimpleBox((((this.index)) * this.width) + (this.width/2) - 20, - 100 + this.yVal / 2, this.yVal, this.width, 10)
     }
 
@@ -365,6 +414,8 @@ export class ScatterGraph {
 
         this.yAxis = createSimpleBox(-22,16, 240, 4, 10, 0xFFFFFF);
         this.xAxis = createSimpleBox(132, -102, 4, 308, 10, 0xFFFFFF);
+        
+        this.xLabels = this.formatLabels();
     }
 
     createGraph() {
@@ -379,12 +430,52 @@ export class ScatterGraph {
         }
 
         if (this.maxX[0] < 100) {
-            this.ratioX = 280 / (Math.ceil(this.maxX[0]/10) * 10);
+            this.ratioX = 280 / this.maxX[0];
         } else {
-            this.ratioX = 280 / (Math.ceil(this.maxX[0]/100) * 100);
+            this.ratioX = 280 / this.maxX[0];
         }
 
         this.values = this.values.map(([x_val, y_val]) => [parseInt(x_val) * this.ratioX, parseInt(y_val) * this.ratioY])
+    }
+
+    formatLabels() {
+        let values = [];
+        console.log(this.maxX)
+        console.log(this.maxX - ((1/5) * this.maxX))
+
+        var label = document.createElement('h6');
+        values.push(this.createLabel(label, this.maxX[0], 590))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, Math.round(this.maxX[0] - ((1/5) * this.maxX[0])), 532))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, Math.round(this.maxX[0] - ((2/5) * this.maxX[0])), 474))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, Math.round(this.maxX[0] - ((3/5) * this.maxX[0])), 416))
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, Math.round(this.maxX[0] - ((4/5) * this.maxX[0])), 358))
+
+
+        return values;
+    }
+
+    createLabel(label, text, position) {
+        label.textContent = text;
+        label.style.position = "absolute";
+        label.style.top =  (317) + "px";
+        label.style.left = (position) + "px";
+        label.style.textAlign = "center";
+        label.style.color = "white";
+        label.style.fontSize = "12px";
+        label.style.zIndex = "1500";
+        label.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label.style.visibility = "hidden";
+
+        document.body.appendChild(label);
+
+        return label;
     }
 
     display(scene) {
@@ -395,6 +486,8 @@ export class ScatterGraph {
 
         scene.addToScene(this.xAxis);
         scene.addToScene(this.yAxis);
+
+        this.xLabels.forEach(label => label.style.visibility = "visible")
     }
 
     hide(scene) {
@@ -405,6 +498,8 @@ export class ScatterGraph {
 
         scene.removeFromScene(this.xAxis);
         scene.removeFromScene(this.yAxis);
+
+        this.xLabels.forEach(label => label.style.visibility = "hidden")
     }
 
     calculateTrendlineSlope() {
