@@ -140,11 +140,9 @@ export class TimeLine {
 
     next() {
         //myChart.canvas.style.visibility = "hidden";
-
-        if (this.timeLine[this.index + 1] instanceof BarGraph) {
-            
-        }
+        
         if (this.index + 1 < this.timeLine.length) {
+            console.log("HI")
             if (this.index === -1) {
                 this.index += 1;
 
@@ -157,7 +155,7 @@ export class TimeLine {
                 this.timeLine[this.index].display(this.scene);
             }
             myChart.canvas.style.visibility = "visible";
-            var barChart = new Chart(myChart, {
+            barChart = new Chart(myChart, {
                 type: 'bar', //bar, horizontal bar, pie, line, doughnut, radar, polarArea
                 data: {
                     labels:[],
@@ -188,6 +186,7 @@ export class TimeLine {
                     },
                 }
             });
+            console.log("BUZZ")
             if (this.index === this.timeLine.length - 1) {
                 return true;
             }
@@ -205,7 +204,6 @@ export class BarGraph {
 
         this.yValues = this.formatValues(values.map(elem => elem[1]), this.maxVal);
         this.xValues = values.map(elem => elem[0]);
-        console.log(this.xValues)
 
         this.graph = this.createBarGraph(this.yValues);
         
@@ -213,8 +211,6 @@ export class BarGraph {
         this.xAxis = createSimpleBox(132, -102, 4, 308, 10, 0xFFFFFF);
 
         this.xLabels = this.formatLabels();
-
-        console.log(this.xLabels)
     }
 
     createBarGraph(yValues) {
@@ -370,7 +366,6 @@ class Bar {
     }
 
     onClick() {
-        console.log("CLICKED");
     }
 
     formatValueLabel() {
@@ -440,8 +435,6 @@ export class ScatterGraph {
 
     formatLabels() {
         let values = [];
-        console.log(this.maxX)
-        console.log(this.maxX - ((1/5) * this.maxX))
 
         var label = document.createElement('h6');
         values.push(this.createLabel(label, this.maxX[0], 590))
@@ -544,6 +537,218 @@ export class ScatterGraph {
 
 }
 
+export class LineGraph {
+    constructor (xyValues, title) {
+        this.yValues = xyValues.map(elem => elem[1])
+
+        if (xyValues.reduce((acc, elem) => isNaN(elem[0]) ? false : acc, true)) {
+            this.xValues = xyValues.map(elem => elem[0]);
+        } else {
+            this.xValues = xyValues.map((_, index) => index);
+            this.xValuesString = xyValues.map(elem => elem[0]);
+        }
+
+        this.maxVal = this.yValues.reduce((acc, currenElem) => currenElem > acc ? currenElem : acc);
+        console.log(this.maxVal)
+        this.maxX = this.xValues.reduce((acc, elem) => elem > acc ? elem : acc);
+
+        this.ratioX;
+        this.ratioY;
+
+        this.title = document.createElement('h2');
+        this.formatTitle(title)
+
+        this.formatValues();
+
+        this.graph = this.createGraph();
+
+        if (!isNaN(xyValues[0][0])) {
+            this.xLabels = this.formatLabels();
+        } else {
+            this.xLabels = this.formatLabelsString();
+        }
+        
+        this.yAxis = createSimpleBox(-22,16, 240, 4, 10, 0xFFFFFF);
+        this.xAxis = createSimpleBox(132, -102, 4, 308, 10, 0xFFFFFF);
+        
+        this.lines = this.xValues.map((x_val, index) => index > 0 ? new JoiningLine(this.xValues[index-1], this.yValues[index-1], this.xValues[index], this.yValues[index]) : new JoiningLine(0, 0, 0, 0))
+    }
+
+    createGraph() {
+        return this.xValues.map((elem, i) => new Point(elem, this.yValues[i]))
+    }
+
+    formatValues () {
+        if (this.maxVal < 100) {
+            this.ratioY = 230 / (Math.ceil(this.maxVal/10) * 10);
+        } else {
+            this.ratioY = 230 / (Math.ceil(this.maxVal/100) * 100);
+        }
+
+        if (this.maxX < 100) {
+            this.ratioX = 300 / this.maxX;
+        } else {
+            this.ratioX = 300 / this.maxX;
+        }
+
+        this.xValues = this.xValues.map((x_val) => parseInt(x_val) * this.ratioX - 20)
+
+        this.yValues = this.yValues.map((y_val) => parseInt(y_val) * this.ratioY )
+    }
+
+    formatLabels() {
+        let values = [];
+
+        var label = document.createElement('h6');
+        values.push(this.createLabel(label, this.maxX, 590))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, Math.round(this.maxX - ((1/5) * this.maxX)), 532))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, Math.round(this.maxX - ((2/5) * this.maxX)), 474))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, Math.round(this.maxX - ((3/5) * this.maxX)), 416))
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, Math.round(this.maxX - ((4/5) * this.maxX)), 358))
+
+
+        return values;
+    }
+
+    createLabel(label, text, position) {
+        label.textContent = text;
+        label.style.position = "absolute";
+        label.style.top =  (317) + "px";
+        label.style.left = (position) + "px";
+        label.style.textAlign = "center";
+        label.style.color = "white";
+        label.style.fontSize = "12px";
+        label.style.zIndex = "1500";
+        label.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label.style.visibility = "hidden";
+
+        document.body.appendChild(label);
+
+        return label;
+    }
+
+    formatLabelsString() {
+        let values = [];
+
+        var label = document.createElement('h6');
+        values.push(this.createLabel(label, this.xValuesString[this.xValuesString.length - 1], 580))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, this.xValuesString[Math.round(this.xValuesString.length - ((1/5) * this.xValuesString.length))], 532))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, this.xValuesString[Math.round(this.xValuesString.length - ((2/5) * this.xValuesString.length))], 474))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, this.xValuesString[Math.round(this.xValuesString.length - ((3/5) * this.xValuesString.length))], 416))
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, this.xValuesString[Math.round(this.xValuesString.length - ((4/5) * this.xValuesString.length))], 358))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, this.xValuesString[0], 300))
+
+        return values;
+    }
+
+    display(scene) {
+        // this.graph.forEach((shape) => shape.display(scene));
+        this.lines.forEach((line) => line.display(scene));
+        console.log(this.lines)
+        this.title.style.visibility = "visible";
+
+        scene.addToScene(this.xAxis);
+        scene.addToScene(this.yAxis);
+
+        this.xLabels.forEach(label => label.style.visibility = "visible")
+
+    }
+
+    hide(scene) {
+        // this.graph.forEach((shape) => shape.hide(scene));
+        this.lines.forEach((line) => line.hide(scene));
+        this.title.style.visibility = "hidden";
+
+        scene.removeFromScene(this.xAxis);
+        scene.removeFromScene(this.yAxis);
+
+        this.xLabels.forEach(label => label.style.visibility = "hidden")
+    }
+
+    formatTitle(title, maxY) {
+        this.title.textContent = title;
+        this.title.style.position = "absolute";
+        this.title.style.top =  (35) + "px";
+        this.title.style.left = (240) + "px";
+        this.title.style.textAlign = "center";
+        this.title.style.color = "white";
+        this.title.style.fontSize = "28px";
+        this.title.style.zIndex = "1500";
+        this.title.style.fontFamily = "Arial, Helvetica, sans-serif";
+        this.title.style.visibility = "hidden";
+
+        document.body.appendChild(this.title);
+    }
+}
+
+class JoiningLine {
+    constructor(startingX, startingY, finishingX, finishingY) {
+        this.startingCoord = [startingX, startingY];
+        this.finishCoord = [finishingX, finishingY];
+
+        this.length = this.calculateLength();
+        this.roation = this.calculateAngle();
+
+        this.shape = this.createLine();
+    }
+
+    calculateLength() {
+        return Math.sqrt(Math.pow((this.finishCoord[0] - this.startingCoord[0]), 2) + Math.pow((this.finishCoord[1] - this.startingCoord[1]), 2))
+    }
+
+    calculateAngle() {
+        return Math.atan((this.finishCoord[1] - this.startingCoord[1]) / (this.finishCoord[0] - this.startingCoord[0]));
+    }
+
+    createLine() {
+        let box = createSimpleBox(this.startingCoord[0] + ((this.length / 2) * Math.sin((Math.PI/2) - this.roation)), (this.finishCoord[1] + this.startingCoord[1])/2 - 100, 1.5, this.length, 2)
+        
+        box.rotation.z = this.roation;
+
+        return box;
+    }
+
+    display(scene) {
+        objects.push(this);
+
+        scene.addToScene(this.shape);
+    }
+
+    hide(scene) {
+        const index = objects.indexOf(this);
+        objects.splice(index, 1);
+        
+        scene.removeFromScene(this.shape)
+    }
+
+    onHover() {
+        this.shape.material.color.setHex( 0xFF0000);
+    }
+
+    offHover() {
+        this.shape.material.color.setHex( 0x3EF4FA);
+    }
+
+    onClick() {
+    }
+}
+
 class Point {
     constructor (xVal, yVal) {
         this.xVal = xVal;
@@ -592,7 +797,6 @@ class Point {
     }
 
     onClick() {
-        console.log("CLICKED");
     }
 }
 
@@ -767,23 +971,27 @@ export function fingerPositionProcessor(pointerX, pointerY, thumbX, thumbY) {
 }
 
 function isFingerOnShape(shape, pointerX, pointerY) {
-    shape.position === undefined ? console.log(shape) : null
-    const shapeX = shape.position.x;
-    const shapeY = shape.position.y;
+    try {
+        const shapeX = shape.position.x;
+        const shapeY = shape.position.y;
 
-    const shapeWidth = shape.geometry.parameters["width"];
-    const shapeHeight = shape.geometry.parameters["height"];
+        const shapeWidth = shape.geometry.parameters["width"];
+        const shapeHeight = shape.geometry.parameters["height"];
 
-    const shapeStartX = shapeX - (shapeWidth / 2);
-    const shapeEndX = shapeX + (shapeWidth / 2);
+        const shapeStartX = shapeX - (shapeWidth / 2);
+        const shapeEndX = shapeX + (shapeWidth / 2);
 
-    const shapeStartY = shapeY - (shapeHeight / 2);
-    const shapeEndY = shapeY+ (shapeHeight / 2);
+        const shapeStartY = shapeY - (shapeHeight / 2);
+        const shapeEndY = shapeY+ (shapeHeight / 2);
 
-    if (pointerX > shapeStartX && pointerX < shapeEndX) {
-        if (pointerY > shapeStartY && pointerY < shapeEndY) {
-            return true;
-        } 
+        if (pointerX > shapeStartX && pointerX < shapeEndX) {
+            if (pointerY > shapeStartY && pointerY < shapeEndY) {
+                return true;
+            } 
+        }
+        return false;
+    } catch{
+
     }
-    return false;
+    
 }

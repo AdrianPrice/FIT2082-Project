@@ -29,7 +29,7 @@ function readFileContent(file) {
 }
 
 function formatData(data) {
-  if (document.getElementById("Bar").checked) {
+  if (document.getElementById("Bar").checked || document.getElementById("Line").checked) {
     
     let dataVal = data.split('\n');
     dataVal = dataVal.map(elem => elem.split(","))
@@ -47,16 +47,19 @@ function formatData(data) {
 function addGraph() {
   const message = document.getElementById("successMessage")
   message.style.visibility = "visible";
-  if (document.getElementById("Bar").checked ||document.getElementById("Scatter").checked) {
+  if (document.getElementById("Bar").checked || document.getElementById("Scatter").checked || document.getElementById("Line").checked) {
     if (inputElement.value != "") {
       let title = document.getElementById("titleInput").value;
 
       if (document.getElementById("Bar").checked) {
         GRAPHING.addGraphFromFile(formattedContent, title, 'bar')
         document.getElementById("Bar").checked = false;
-      } else {
+      } else if (document.getElementById("Scatter").checked) {
         document.getElementById("Scatter").checked = false;
         GRAPHING.addGraphFromFile(formattedContent, title, 'scatter')
+      } else if (document.getElementById("Line").checked) {
+        document.getElementById("Line").checked = false;
+        GRAPHING.addGraphFromFile(formattedContent, title, 'line')
       }
 
       document.getElementById("titleInput").value = "";

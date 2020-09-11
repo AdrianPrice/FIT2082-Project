@@ -30,6 +30,11 @@ slider.oninput = function () {
 // scene.addToTimeLine(graph3);
 // scene.addToTimeLine(graph4);
 
+// const lg = new INTERFACE.LineGraph([[10, 50],[20, 80],[30, 50], [40, 20], [60, 90], [80, 30], [120, 150]], "test");
+// scene.addToTimeLine(lg);
+// const lgW = new INTERFACE.LineGraph([['this', 10], ['is', 15], ['great', 20], ['this', 10], ['is', 15], ['great', 20], ['this', 10], ['is', 15], ['great', 20]]);
+// scene.addToTimeLine(lgW);
+
 // const button = new INTERFACE.Button(40, 80, -100, -40, "Next");
 // button.displayButton(scene);
 // var objLoader = new THREE.OBJLoader();
@@ -217,6 +222,8 @@ export function addGraphFromFile(graphData, title, type) {
         graph = new INTERFACE.BarGraph(graphData, title)
     } else if (type === 'scatter') {
         graph = new INTERFACE.ScatterGraph(graphData, title)
+    } else if (type === 'line') {
+        graph = new INTERFACE.LineGraph(graphData, title)
     }
     
     scene.addToTimeLine(graph)
