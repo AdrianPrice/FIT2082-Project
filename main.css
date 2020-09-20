@@ -120,13 +120,13 @@ input {
 
 #downloadLink {
     position: absolute;
-    top: 450px;
+    top: 470px;
     left: 660px;
 }
 
 #successMessage {
     position: absolute;
-    top: 352px;
+    top: 412px;
     left: 750px;
     font-size: small;
     visibility: hidden;

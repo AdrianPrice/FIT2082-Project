@@ -11,117 +11,23 @@ document.body.appendChild(stats.dom);
 
 const slider = document.getElementById("myRange");
 
+const filters = [...Array(21).keys()].map((_ => [new FILTER.LowPassFilter(0.5), new FILTER.LowPassFilter(0.5), new FILTER.LowPassFilter(0.5)]));
+
 
 const scene = new INTERFACE.Scene();
-const lpFilterPointerX = new FILTER.LowPassFilter(0.3);
-const lpFilterPointerY = new FILTER.LowPassFilter(0.3);
-const lpFilterThumbX = new FILTER.LowPassFilter(0.3);
-const lpFilterThumbY = new FILTER.LowPassFilter(0.3);
 
 slider.oninput = function () {
     document.getElementById("alphaText").textContent = "Alpha Value: " + this.value;
-    lpFilterPointerX.setAlpha(this.value);
-    lpFilterPointerY.setAlpha(this.value);
-    lpFilterThumbX.setAlpha(this.value);
-    lpFilterThumbY.setAlpha(this.value);
+
+    filters.forEach(filter => filter.forEach(filter_inner => filter_inner.setAlpha(this.value)));
 }
-// scene.addToTimeLine(graph);
-// scene.addToTimeLine(graph2);
-// scene.addToTimeLine(graph3);
-// scene.addToTimeLine(graph4);
-
-// const lg = new INTERFACE.LineGraph([[10, 50],[20, 80],[30, 50], [40, 20], [60, 90], [80, 30], [120, 150]], "test");
-// scene.addToTimeLine(lg);
-// const lgW = new INTERFACE.LineGraph([['this', 10], ['is', 15], ['great', 20], ['this', 10], ['is', 15], ['great', 20], ['this', 10], ['is', 15], ['great', 20]]);
-// scene.addToTimeLine(lgW);
-
-// const button = new INTERFACE.Button(40, 80, -100, -40, "Next");
-// button.displayButton(scene);
-// var objLoader = new THREE.OBJLoader();
-
-// var loader = new GLTFLoader();
-
-// console.log("BUZZ")
-// loader.load( './Victoria.glb', function ( gltf ) {
-//     console.log("CUZZ")
-
-// 	scene.add( gltf.scene );
-
-// }, undefined, function ( error ) {
-
-// 	console.error( error );
-
-// } );
-// console.log("LUZZ")
-
-//INTERFACE.render(renderer, scene, camera);
-
-// var loader = new THREE.GLTFLoader();
-// var modelVIC;
-// var modelNSW;
-// loader.load(
-// 	// resource URL
-// 	'victoria.glb',
-// 	// called when the resource is loaded
-// 	function ( gltf ) {
-//         modelVIC = gltf.scene;
-
-//         modelVIC.traverse((object) => {
-//             if (object.isMesh) {
-//                 object.material.color.set( 0xFFCC00 )
-//             }
-//         })
-
-//         gltf.scene.rotation.x = 90;
-//         gltf.scene.position.x -= 100;
-//         console.log(gltf.scene);
-// 		scene.addToScene( gltf.scene );
-
-//    })
-    
-    // loader.load(
-    //     // resource URL
-    //     'NSW.glb',
-    //     // called when the resource is loaded
-    //     function ( gltf ) {
-    //         modelNSW = gltf.scene;
-    
-    //         modelNSW.traverse((object) => {
-    //             if (object.isMesh) {
-    //                 object.material.color.set( 0xFFCC00 )
-    //             }
-    //         })
-    
-    //         gltf.scene.rotation.y = 90;
-    //         console.log(gltf.scene);
-    //         scene.addToScene( gltf.scene );
-    
-    //     })
-
-
 
 
 startTracking();
 
-// var box = INTERFACE.createSimpleBox(0, 0, 100, 20, 10);
-// scene.addToScene(box);
-// box = INTERFACE.createSimpleBox(20, 0, 120, 20, 10);
-// scene.addToScene(box);
-// box = INTERFACE.createSimpleBox(40, 0, 140, 20, 10);
-// scene.addToScene(box);
-// box = INTERFACE.createSimpleBox(60, 0, 150, 20, 10);
-// scene.addToScene(box);
-// box = INTERFACE.createSimpleBox(80, 0, 150, 20, 10);
-// scene.addToScene(box);
-// box = INTERFACE.createSimpleBox(100, 0, 80, 20, 10);
-// scene.addToScene(box);
-// box = INTERFACE.createSimpleBox(120, 0, 90, 20, 10);
-// scene.addToScene(box);
-// box = INTERFACE.createSimpleBox(140, 0, 130, 20, 10);
-// scene.addToScene(box);
-
 
 let pointerString = document.createElement('p');
+pointerString.setAttribute("id", "handDetected")
 pointerString.textContent = "Pointer Position: Loading...";
 
 document.body.appendChild(pointerString);
@@ -137,10 +43,7 @@ async function startTracking() {
 
 
 
-    //const track = setInterval(trackHand(model, video), 1000);
     setInterval(trackHand, 10);
-    //startTracking(video);
-
 }
 
 async function trackHand() {
@@ -151,21 +54,16 @@ async function trackHand() {
         try {
             pointerString.textContent = "Hand Detected";
             pointerString.style.color = "green";
-            //pointerString.textContent = "Position: " + lpFilter.filter((-1 * (hands[0].landmarks[8][0] - 320)));
-            INTERFACE.fingerPositionProcessor(lpFilterPointerX.filter((-1 * (hands[0].landmarks[8][0] - 320))), lpFilterPointerY.filter((-1 * (hands[0].landmarks[8][1] - 240))), lpFilterThumbX.filter((-1 * (hands[0].landmarks[4][0] - 320))), lpFilterThumbY.filter((-1 * (hands[0].landmarks[4][1] - 240))));
-            // box.position.x = lpFilterX.filter((-1 * (hands[0].landmarks[8][0] - 320)) + 320) - 320;
-            // box.position.y = lpFilterY.filter((-1 * (hands[0].landmarks[8][1] - 240)) + 240) - 240;
-
-            // box2.position.x = (-1 * (hands[0].landmarks[8][0] - 320));
-            // box2.position.y = (-1 * (hands[0].landmarks[8][1] - 240));
-
-
-            //console.log("STD:",((-1 * (hands[0].landmarks[8][0] - 320)), (-1 * (hands[0].landmarks[8][1] - 240))));
-            //console.log("LP:",(lpFilter.filter((-1 * (hands[0].landmarks[8][0] - 320))), lpFilter.filter((-1 * (hands[0].landmarks[8][1] - 240)))))
-        } catch {
+            
+            INTERFACE.fingerPositionProcessor(scene,
+                hands[0].landmarks
+                    .map((xyz, outer_index) => 
+                                    [-1 * (xyz[0] - 320), -1 * (xyz[1] - 240), xyz[2]]
+                                        .map((elem, inner_index) => filters[outer_index][inner_index].filter(elem))));
+            
+        } catch (err){
             pointerString.textContent = "No Hand Detected";
             pointerString.style.color = "red";
-            INTERFACE.fingerPositionProcessor(1000000000, 1000000000)
         }
     }
     stats.end();
@@ -180,42 +78,6 @@ function animate () {
 
 animate();
 
-function getNewGraph() {
-    // const graph = new INTERFACE.BarGraph([parseInt(document.getElementById('y1Val').value), 
-    //                                      parseInt(document.getElementById('y2Val').value), 
-    //                                      parseInt(document.getElementById('y3Val').value), 
-    //                                      parseInt(document.getElementById('y4Val').value), 
-    //                                      parseInt(document.getElementById('y5Val').value),
-    //                                      parseInt(document.getElementById('y6Val').value),
-    //                                      parseInt(document.getElementById('y7Val').value),
-    //                                      parseInt(document.getElementById('y8Val').value)], 
-    //                                      document.getElementById('graphTitle').value);
-    
-    // document.getElementById('graphTitle').value = "";
-    // document.getElementById('y1Val').value = "";
-    // document.getElementById('y2Val').value = "";
-    // document.getElementById('y3Val').value = "";
-    // document.getElementById('y4Val').value = "";
-    // document.getElementById('y5Val').value = "";
-    // document.getElementById('y6Val').value = "";
-    // document.getElementById('y7Val').value = "";
-    // document.getElementById('y8Val').value = "";
-    const graph = new INTERFACE.BarGraph([200, 250, 300, 120], "Test")
-    scene.addToTimeLine(graph);
-    
-    const graph2 = new INTERFACE.BarGraph([630, 550, 369, 603, 352, 406, 687, 445, 422, 454, 373, 310, 322, 401, 257, 362, 298, 265, 271, 217, 208, 234, 169, 175, 202, 112, 148, 146, 112, 113], "Victoria COVID Cases");
-    scene.addToTimeLine(graph2);
-
-    const graph3 = new INTERFACE.BarGraph([2, 0, 2, 0, 0, 0, 0, 0, 1, 0, 19, 13, 7, 13, 9, 12, 6, 5, 11, 6, 3, 9, 7, 5, 7, 12, 13, 2, 9, 14], "New Zealand COVID Cases");
-    scene.addToTimeLine(graph3);
-
-    const scatter = new INTERFACE.ScatterGraph([[10, 50],[20, 30],[80, 10],[90, 70],[100, 190],[40, 80], [100, 100], [200, 200], [190, 230], [0, 290]], "Upward Scatter");
-    scene.addToTimeLine(scatter);
-
-    const scatter2 = new INTERFACE.ScatterGraph([[10, 200],[20, 150],[80, 100],[90, 170],[100, 190],[40, 220], [100, 190], [200, 200], [190, 230], [0, 290], [10, 250], [30, 270], [60, 250], [90, 130], [150, 170], [25, 178], [64, 154], [174, 203], [180, 80], [120, 25], [38, 220], [180, 40], [140, 150], [130, 180], [220, 70], [250, 60], [270, 25], [260, 35], [120, 200]], "Downward Scatter");
-    scene.addToTimeLine(scatter2);
-}
-
 export function addGraphFromFile(graphData, title, type) {
     let graph;
     if (type === 'bar') {
@@ -224,6 +86,8 @@ export function addGraphFromFile(graphData, title, type) {
         graph = new INTERFACE.ScatterGraph(graphData, title)
     } else if (type === 'line') {
         graph = new INTERFACE.LineGraph(graphData, title)
+    } else if (type === "australia") {
+        graph = new INTERFACE.Australia(graphData, title)
     }
     
     scene.addToTimeLine(graph)

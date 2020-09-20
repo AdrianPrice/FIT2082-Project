@@ -51,9 +51,9 @@ export class Scene {
         this.renderer = this.createRenderer();
         this.light = this.createLight();
         this.timeLine = new TimeLine(this);
-        this.nextButton = new Button(40, 80, 270, -125, "Next", this);
+        //this.nextButton = new Button(40, 80, 270, -125, "Next", this);
         
-        this.buttonHidden = true;
+        //this.buttonHidden = true;
     }
 
     /**
@@ -81,6 +81,8 @@ export class Scene {
         const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
         renderer.setClearColor("#e5e5e5", 0);
         renderer.setSize(640, 480);
+
+        renderer.domElement.style.position = "absolute"
 
         document.body.appendChild(renderer.domElement);
 
@@ -114,15 +116,15 @@ export class Scene {
         this.timeLine.addToTimeLine(graph);
 
         if (this.buttonHidden) {
-            this.nextButton.display(this);
-            this.buttonHidden = false;
+            //this.nextButton.display(this);
+            //this.buttonHidden = false;
         }
     }
 
     nextPane() {
         if (this.timeLine.next()) {
-            this.button.hide(this);
-            this.buttonHidden = true;
+            //this.button.hide(this);
+            //this.buttonHidden = true;
         };
     }
 }
@@ -142,7 +144,6 @@ export class TimeLine {
         //myChart.canvas.style.visibility = "hidden";
         
         if (this.index + 1 < this.timeLine.length) {
-            console.log("HI")
             if (this.index === -1) {
                 this.index += 1;
 
@@ -154,6 +155,11 @@ export class TimeLine {
 
                 this.timeLine[this.index].display(this.scene);
             }
+            // if (this.timeLine[this.index] instanceof Australia) {
+            //     myChart.canvas.style.visibility = "hidden";
+            // } else {
+            //     myChart.canvas.style.visibility = "visible";
+            // }
             myChart.canvas.style.visibility = "visible";
             barChart = new Chart(myChart, {
                 type: 'bar', //bar, horizontal bar, pie, line, doughnut, radar, polarArea
@@ -184,9 +190,15 @@ export class TimeLine {
                     legend: {
                         display: false
                     },
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                display: (this.timeLine[this.index] instanceof Australia) ? false : true
+                            }
+                        }]
+                    }
                 }
             });
-            console.log("BUZZ")
             if (this.index === this.timeLine.length - 1) {
                 return true;
             }
@@ -376,6 +388,7 @@ class Bar {
         this.valueLabel.style.color = "white";
         this.valueLabel.style.fontSize = "20px";
         this.valueLabel.style.zIndex = "1500";
+        this.valueLabel.style.fontFamily = "Arial, Helvetica, sans-serif";
         this.valueLabel.style.visibility = "hidden";
 
         document.body.appendChild(this.valueLabel);
@@ -549,7 +562,6 @@ export class LineGraph {
         }
 
         this.maxVal = this.yValues.reduce((acc, currenElem) => currenElem > acc ? currenElem : acc);
-        console.log(this.maxVal)
         this.maxX = this.xValues.reduce((acc, elem) => elem > acc ? elem : acc);
 
         this.ratioX;
@@ -660,7 +672,6 @@ export class LineGraph {
     display(scene) {
         // this.graph.forEach((shape) => shape.display(scene));
         this.lines.forEach((line) => line.display(scene));
-        console.log(this.lines)
         this.title.style.visibility = "visible";
 
         scene.addToScene(this.xAxis);
@@ -797,6 +808,187 @@ class Point {
     }
 
     onClick() {
+    }
+}
+
+export class Australia {
+    constructor (values, title) {
+        this.stateObjects = [new State ('VictoriaModel.glb', values[0]), new State('NSWModel.glb', values[1]), new State('QLDModel.glb', values[2]), new State("SAModel.glb", values[3]), new State("NTModel.glb", values[4]), new State('WAModel.glb', values[5]), new State('TasmaniaModel.glb', values[6])]
+        
+        this.title = document.createElement('h2');
+        this.formatTitle(title, 230);
+    }
+
+    display (scene) {
+        this.stateObjects.forEach(elem => elem.display(scene))
+        this.title.style.visibility = "visible";
+    }
+
+    hide (scene) {
+        this.stateObjects.forEach(elem => elem.hide(scene))
+        this.title.style.visibility = "hidden";
+    }
+
+    formatTitle(title, maxY) {
+        this.title.textContent = title;
+        this.title.style.position = "absolute";
+        this.title.style.top =  (35) + "px";
+        this.title.style.left = (240) + "px";
+        this.title.style.textAlign = "center";
+        this.title.style.color = "white";
+        this.title.style.fontSize = "28px";
+        this.title.style.zIndex = "1500";
+        this.title.style.fontFamily = "Arial, Helvetica, sans-serif";
+        this.title.style.visibility = "hidden";
+
+        document.body.appendChild(this.title);
+    }
+}
+
+class State {
+    constructor (name, value) {
+        this.filePath = name;
+        this.loader = new THREE.GLTFLoader();
+
+        this.state = 0;
+        this.load();
+        this.test = 0;
+
+        this.geometry = {
+            parameters: {
+                width: 30,
+                height: 30
+            }
+        };
+
+        this.position = {
+            y: 0,
+            x: 0
+        };
+
+        this.valueLabel = document.createElement('h6');
+        this.formatValueLabel(value);
+    }
+
+    load () {
+        this.loader.load(
+            // resource URL
+            this.filePath,
+            // called when the resource is loaded
+            this.load_aux)
+    }
+
+    load_aux = (gltf) => {
+        var state = gltf.scene;
+        
+                state.traverse((object) => {
+                                if (object.isMesh) {
+                                    object.material.color.set( 0x3EF4FA )
+                                    object.material.metalness = 0;
+                                    object.scale.x = 60;
+                                    object.scale.y = 60;
+                                    object.scale.z = 60;
+                                }
+                            })
+        
+                state.rotation.x = Math.PI / 2;
+                
+
+                this.setState(state);
+
+                if (this.filePath === "VictoriaModel.glb") {
+                    state.position.x += 195;
+                    state.position.y -= 57;
+                } else if (this.filePath === "NSWModel.glb") {
+                    state.position.x += 202;
+                    state.position.y -= 19;
+                } else if (this.filePath === "QLDModel.glb") {
+                    state.position.x += 188;
+                    state.position.y += 46;
+                } else if (this.filePath === "SAModel.glb") {
+                    state.position.x += 128;
+                    state.position.y -= 1;
+
+                } else if (this.filePath === "NTModel.glb") {
+                    state.position.x += 118;
+                    state.position.y += 70;
+                } else if (this.filePath === "WAModel.glb") {
+                    state.position.x += 48;
+                    state.position.y += 30;
+                } else if (this.filePath === "TasmaniaModel.glb") {
+                    state.position.x += 200;
+                    state.position.y -= 95;
+                }
+    }
+
+    setState (state) {
+        this.state = state
+    }
+
+    formatValueLabel(value) {
+        const len = String(value).length - 1;
+
+        this.valueLabel.textContent = value;
+        this.valueLabel.style.position = "absolute";
+        this.valueLabel.style.color = "white";
+        this.valueLabel.style.fontSize = "20px";
+        this.valueLabel.style.zIndex = "1500";
+        this.valueLabel.style.fontFamily = "Arial, Helvetica, sans-serif";
+        this.valueLabel.style.visibility = "hidden";
+
+        if (this.filePath === "VictoriaModel.glb") {
+            this.valueLabel.style.top =  240 + "px";
+            this.valueLabel.style.left = 510 - (len * 5) + "px";
+        } else if (this.filePath === "NSWModel.glb") {
+            this.valueLabel.style.top =  200 + "px";
+            this.valueLabel.style.left = 520 - (len * 5)  + "px";
+        } else if (this.filePath === "QLDModel.glb") {
+            this.valueLabel.style.top +=  130 + "px";
+            this.valueLabel.style.left += 500 - (len * 5)  + "px";
+        } else if (this.filePath === "SAModel.glb") {
+            this.valueLabel.style.top +=  180 + "px";
+            this.valueLabel.style.left += 440 - (len * 5)  + "px";
+        } else if (this.filePath === "NTModel.glb") {
+            this.valueLabel.style.top +=  115 + "px";
+            this.valueLabel.style.left += 435 - (len * 5)  + "px";
+        } else if (this.filePath === "WAModel.glb") {
+            this.valueLabel.style.top +=  160 + "px";
+            this.valueLabel.style.left += 355 - (len * 5)  + "px";
+        } else if (this.filePath === "TasmaniaModel.glb") {
+            this.valueLabel.style.top +=  275 + "px";
+            this.valueLabel.style.left += 515 - (len * 5)  + "px";
+        }
+
+        document.body.appendChild(this.valueLabel);
+    }
+
+    display (scene) {
+        //objects.push(this)
+        this.valueLabel.style.visibility = "visible";
+        scene.addToScene(this.state);
+    }   
+
+    hide (scene) {
+        //const index = objects.indexOf(this);
+        //objects.splice(index, 1);
+        this.valueLabel.style.visibility = "hidden";
+        scene.removeFromScene(this.state);
+    }
+
+    onHover() {
+        // this.state.traverse((object) => {
+        //     if (object.isMesh) {
+        //         object.material.color.set( 0xFF0000 )
+        //     }
+        // })
+    }
+
+    offHover() {
+        // this.state.traverse((object) => {
+        //     if (object.isMesh) {
+        //         object.material.color.set( 0x3EF4FA )
+        //     }
+        // })
     }
 }
 
@@ -958,40 +1150,79 @@ function createRandomBarGraph(scene) {
 
 }
 
+let positions = []
 
-export function fingerPositionProcessor(pointerX, pointerY, thumbX, thumbY) {
-    objects.forEach(elem => isFingerOnShape(elem, pointerX, pointerY) 
-                                ? isFingerOnShape(elem, thumbX, thumbY) 
-                                        ? elem.onClick() 
-                                        : elem.onHover() 
-                                : isFingerOnShape(elem, thumbX, thumbY)
-                                        ? elem.onHover() 
-                                        : elem.offHover());
+export function fingerPositionProcessor(scene, handValues) {
+    const shape = getHandShape(handValues);
+    if (shape === "pointing") {
+
+        const pointerX = handValues[8][0];
+        const pointerY = handValues[8][1];
+
+        const thumbX = handValues[4][0];
+        const thumbY = handValues[4][1];
+        
+    
+        objects.forEach(elem => isFingerOnShape(elem, pointerX, pointerY) 
+                                    ? isFingerOnShape(elem, thumbX, thumbY) 
+                                            ? elem.onClick() 
+                                            : elem.onHover() 
+                                    : isFingerOnShape(elem, thumbX, thumbY)
+                                            ? elem.onHover() 
+                                            : elem.offHover());
+    } else if (shape === "palm") {
+        positions.push(handValues[0][0])
+        
+        if (handValues[0][0] < (positions[1] - 100)) {
+            scene.nextPane();
+            positions = []
+        } else {
+            setTimeout(() => positions.shift(), 2000)
+        }
+ 
+        
+    }
+    
                         
 }
 
 function isFingerOnShape(shape, pointerX, pointerY) {
-    try {
-        const shapeX = shape.position.x;
-        const shapeY = shape.position.y;
+    const shapeX = shape.position.x;
+    const shapeY = shape.position.y;
 
-        const shapeWidth = shape.geometry.parameters["width"];
-        const shapeHeight = shape.geometry.parameters["height"];
+    const shapeWidth = shape.geometry.parameters["width"];
+    const shapeHeight = shape.geometry.parameters["height"];
 
-        const shapeStartX = shapeX - (shapeWidth / 2);
-        const shapeEndX = shapeX + (shapeWidth / 2);
+    const shapeStartX = shapeX - (shapeWidth / 2);
+    const shapeEndX = shapeX + (shapeWidth / 2);
 
-        const shapeStartY = shapeY - (shapeHeight / 2);
-        const shapeEndY = shapeY+ (shapeHeight / 2);
+    const shapeStartY = shapeY - (shapeHeight / 2);
+    const shapeEndY = shapeY+ (shapeHeight / 2);
 
-        if (pointerX > shapeStartX && pointerX < shapeEndX) {
-            if (pointerY > shapeStartY && pointerY < shapeEndY) {
-                return true;
-            } 
-        }
-        return false;
-    } catch{
-
+    if (pointerX > shapeStartX && pointerX < shapeEndX) {
+        if (pointerY > shapeStartY && pointerY < shapeEndY) {
+            return true;
+        } 
     }
+    return false;
     
+}
+
+function getHandShape (handPositions) {
+    let pointerString = document.getElementById("handDetected");
+    if (handPositions[3][0] < handPositions[4][0] && handPositions[6][1] <= handPositions[8][1]) {
+        pointerString.textContent = "Hand Detected: Pointing";
+        return "pointing";
+    } else if (handPositions[6][1] > handPositions[8][1]) {
+        pointerString.textContent = "Hand Detected: Fist";
+        return "fist";
+    } else {
+        pointerString.textContent = "Hand Detected: Palm";
+        return "palm";
+    }
+
+}
+
+function distanceBetweenTwoLandmarks(landmark1, landmark2) {
+    return Math.sqrt(Math.pow(landmark2[0] - landmark1[0], 2) + Math.pow(landmark2[1] - landmark1[1], 2));
 }

@@ -34,20 +34,22 @@ function formatData(data) {
     let dataVal = data.split('\n');
     dataVal = dataVal.map(elem => elem.split(","))
     dataVal = dataVal.map(elem => [elem[0], parseInt(elem[1])])
-    return dataVal
-  } else {
-    
+    return dataVal;
+  } else if (document.getElementById("Scatter").checke) {
     let dataVal = data.split('\n');
     dataVal = dataVal.map(elem => elem.split(","))
     dataVal = dataVal.map(elem => [parseInt(elem[0]), parseInt(elem[1])])
-    return dataVal
+    return dataVal;
+  } else if (document.getElementById("Australia").checked) {
+    let dataVal = data.split('\n');
+    return dataVal;
   }
 }
 
 function addGraph() {
   const message = document.getElementById("successMessage")
   message.style.visibility = "visible";
-  if (document.getElementById("Bar").checked || document.getElementById("Scatter").checked || document.getElementById("Line").checked) {
+  if (document.getElementById("Bar").checked || document.getElementById("Scatter").checked || document.getElementById("Line").checked|| document.getElementById("Australia").checked) {
     if (inputElement.value != "") {
       let title = document.getElementById("titleInput").value;
 
@@ -60,6 +62,9 @@ function addGraph() {
       } else if (document.getElementById("Line").checked) {
         document.getElementById("Line").checked = false;
         GRAPHING.addGraphFromFile(formattedContent, title, 'line')
+      } else if (document.getElementById("Australia").checked) {
+        document.getElementById("Australia").checked = false;
+        GRAPHING.addGraphFromFile(formattedContent, title, 'australia')
       }
 
       document.getElementById("titleInput").value = "";
