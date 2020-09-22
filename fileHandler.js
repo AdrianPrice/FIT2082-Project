@@ -35,7 +35,7 @@ function formatData(data) {
     dataVal = dataVal.map(elem => elem.split(","))
     dataVal = dataVal.map(elem => [elem[0], parseInt(elem[1])])
     return dataVal;
-  } else if (document.getElementById("Scatter").checke) {
+  } else if (document.getElementById("Scatter").checked) {
     let dataVal = data.split('\n');
     dataVal = dataVal.map(elem => elem.split(","))
     dataVal = dataVal.map(elem => [parseInt(elem[0]), parseInt(elem[1])])
@@ -43,13 +43,23 @@ function formatData(data) {
   } else if (document.getElementById("Australia").checked) {
     let dataVal = data.split('\n');
     return dataVal;
+  } else if (document.getElementById("multiLine").checked) {
+    let dataVal = data.split('\n\n');
+    let seriesTitles = dataVal[0].split('\n');
+    let datas = dataVal.slice(1);
+    datas = datas.map(series => series.split('\n'));
+    datas.forEach(series => series.shift())
+    datas = datas.map(series => series.map(elem => elem.split(",")))
+    datas = datas.map(series => series.map(elem => [elem[0], parseInt(elem[1])]))
+
+    return [seriesTitles, [datas]]
   }
 }
 
 function addGraph() {
   const message = document.getElementById("successMessage")
   message.style.visibility = "visible";
-  if (document.getElementById("Bar").checked || document.getElementById("Scatter").checked || document.getElementById("Line").checked|| document.getElementById("Australia").checked) {
+  if (document.getElementById("Bar").checked || document.getElementById("Scatter").checked || document.getElementById("Line").checked|| document.getElementById("Australia").checked|| document.getElementById("multiLine").checked) {
     if (inputElement.value != "") {
       let title = document.getElementById("titleInput").value;
 
@@ -58,6 +68,7 @@ function addGraph() {
         document.getElementById("Bar").checked = false;
       } else if (document.getElementById("Scatter").checked) {
         document.getElementById("Scatter").checked = false;
+        console.log(formattedContent)
         GRAPHING.addGraphFromFile(formattedContent, title, 'scatter')
       } else if (document.getElementById("Line").checked) {
         document.getElementById("Line").checked = false;
@@ -65,6 +76,9 @@ function addGraph() {
       } else if (document.getElementById("Australia").checked) {
         document.getElementById("Australia").checked = false;
         GRAPHING.addGraphFromFile(formattedContent, title, 'australia')
+      }else if (document.getElementById("multiLine").checked) {
+        document.getElementById("multiLine").checked = false;
+        GRAPHING.addGraphFromFile(formattedContent, title, 'multiLine')
       }
 
       document.getElementById("titleInput").value = "";

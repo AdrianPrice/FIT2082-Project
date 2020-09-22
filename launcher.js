@@ -23,6 +23,14 @@ slider.oninput = function () {
 }
 
 
+// const graph = new INTERFACE.LineGraphMulti([[["Jan", 12], ["Fev", 15], ["March", 53], ["April", 1], ["May", 21], ["June", 19], ["July", 22], ["August", 54], ["September", 71], ["October", 345], ["November", 19], ["December", 22]], 
+//                                             [["Jan", 100], ["Fev", 300], ["March", 22], ["April", 1], ["May", 345], ["June", 19], ["July", 22], ["August", 22], ["September", 14], ["October", 345], ["November", 75], ["December", 22]], 
+//                                             [["Jan", 21], ["Fev", 34], ["March", 75], ["April", 1], ["May", 22], ["June", 45], ["July", 22], ["August", 22], ["September", 17], ["October", 345], ["November", 19], ["December", 14]], 
+//                                             [["Jan", 32], ["Fev", 15], ["March", 22], ["April", 1], ["May", 345], ["June", 45], ["July", 22], ["August", 282], ["September", 1], ["October", 345], ["November", 19], ["December", 22]],
+//                                             [["Jan", 53], ["Fev", 214], ["March", 22], ["April", 1], ["May", 44], ["June", 19], ["July", 22], ["August", 22], ["September", 19], ["October", 43], ["November", 22], ["December", 11]]], 
+//                                             "Multiline Line Graph", ["Australia", "Asia", "Africa", "North America", "Europe"])
+// scene.addToTimeLine(graph);
+
 startTracking();
 
 
@@ -43,7 +51,7 @@ async function startTracking() {
 
 
 
-    setInterval(trackHand, 10);
+    setInterval(trackHand, 1);
 }
 
 async function trackHand() {
@@ -64,6 +72,7 @@ async function trackHand() {
         } catch (err){
             pointerString.textContent = "No Hand Detected";
             pointerString.style.color = "red";
+            console.log(err.stack)
         }
     }
     stats.end();
@@ -88,6 +97,8 @@ export function addGraphFromFile(graphData, title, type) {
         graph = new INTERFACE.LineGraph(graphData, title)
     } else if (type === "australia") {
         graph = new INTERFACE.Australia(graphData, title)
+    } else if (type === "multiLine") {
+        graph = new INTERFACE.LineGraphMulti(graphData[1][0], title, graphData[0])
     }
     
     scene.addToTimeLine(graph)

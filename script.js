@@ -147,12 +147,13 @@ export class TimeLine {
             if (this.index === -1) {
                 this.index += 1;
 
+                this.timeLine[this.index].update();
                 this.timeLine[this.index].display(this.scene);
             } else {
                 this.timeLine[this.index].hide(this.scene);
                 
                 this.index += 1;
-
+                this.timeLine[this.index].update();
                 this.timeLine[this.index].display(this.scene);
             }
             // if (this.timeLine[this.index] instanceof Australia) {
@@ -298,14 +299,16 @@ export class BarGraph {
         let ratio = 0;
         if (maxValue < 100) {
             ratio = 230 / (Math.ceil(maxValue/10) * 10);
-        } else {
+        } else if (maxValue < 1000) {
             ratio = 230 / (Math.ceil(maxValue/100) * 100);
+        } else if (maxValue < 10000) {
+            ratio = 230 / (Math.ceil(maxValue/500) * 500);
+        } else {
+            ratio = 230 / (Math.ceil(maxValue/5000) * 5000);
         }
         
 
         return yValues.map(value => parseInt(value) * ratio)
-
-
     }
 
     formatTitle(title, maxY) {
@@ -321,6 +324,17 @@ export class BarGraph {
         this.title.style.visibility = "hidden";
 
         document.body.appendChild(this.title);
+    }
+
+    update () {
+        const xPos = [580, 532, 474, 416, 358, 300]
+        this.title.style.top =  (35 + translationY) + "px";
+        this.title.style.left = (240 + translationX) + "px";
+
+        this.graph.forEach((shape) => shape.update());
+
+        this.xLabels.forEach((shape, index) => {shape.style.top = (317 + translationY) + "px";
+                                                shape.style.left = (xPos[index] + translationX) + "px"})
     }
 
 }
@@ -393,6 +407,11 @@ class Bar {
 
         document.body.appendChild(this.valueLabel);
     }
+
+    update() {
+        this.valueLabel.style.top = ((170 + (-1 * (- 100 + this.yVal))) + translationY) + "px";
+        this.valueLabel.style.left = ((260 + (45 + ((this.index - 1) * this.width + ((3 * this.width)/2) - 20))) + translationX) + "px";
+    }
 }
 
 export class ScatterGraph {
@@ -432,18 +451,23 @@ export class ScatterGraph {
 
     formatValues () {
         if (this.maxVal[1] < 100) {
-            this.ratioY = 230 / (Math.ceil(this.maxVal[1]/10) * 10);
+            this.ratioY  = 230 / (Math.ceil(this.maxVal[1]/10) * 10);
+        } else if (this.maxVal[1] < 1000) {
+            this.ratioY  = 230 / (Math.ceil(this.maxVal[1]/100) * 100);
+        } else if (this.maxVal[1] < 10000) {
+            this.ratioY  = 230 / (Math.ceil(this.maxVal[1]/500) * 500);
         } else {
-            this.ratioY = 230 / (Math.ceil(this.maxVal[1]/100) * 100);
+            this.ratioY  = 230 / (Math.ceil(this.maxVal[1]/5000) * 5000);
         }
 
         if (this.maxX[0] < 100) {
-            this.ratioX = 280 / this.maxX[0];
+            this.ratioX = 295 / this.maxX[0];
         } else {
-            this.ratioX = 280 / this.maxX[0];
+            this.ratioX = 295 / this.maxX[0];
         }
 
-        this.values = this.values.map(([x_val, y_val]) => [parseInt(x_val) * this.ratioX, parseInt(y_val) * this.ratioY])
+        this.values = this.values.map(([x_val, y_val]) => [parseInt(x_val) * this.ratioX - 15, parseInt(y_val) * this.ratioY])
+
     }
 
     formatLabels() {
@@ -519,12 +543,22 @@ export class ScatterGraph {
     }
 
     createTrendline() {
-        const line = createSimpleBox(this.minX[0] + ((this.trendlineLength / 2) * Math.sin((Math.PI/2) - Math.atan(this.trendlineSlope))), (230 * ((this.trendlineSlope * ((this.maxX[0] + this.minX[0])/2)) + this.trendlineIntercept))/300 - 100, 5, this.trendlineLength, 5);
+        const line = createSimpleBox(this.minX[0] + ((this.trendlineLength / 2) * Math.sin((Math.PI/2) - Math.atan(this.trendlineSlope))) - 15, (230 * ((this.trendlineSlope * ((this.maxX[0] + this.minX[0])/2)) + this.trendlineIntercept))/300 - 100, 5, this.trendlineLength, 5);
         
         line.material.color.setHex( 0xffffff);
 
         line.rotation.z = Math.atan(this.trendlineSlope);
         return line;
+    }
+
+    update () {
+        this.title.style.top =  (35 + translationY) + "px";
+        this.title.style.left = (240 + translationX) + "px";
+
+        const xPos = [590, 532, 474, 416, 358]
+
+        this.xLabels.forEach((shape, index) => {shape.style.top = (317 + translationY) + "px";
+                                                shape.style.left = (xPos[index] + translationX) + "px"})
     }
 
     calculateTrendlineLength() {
@@ -550,12 +584,217 @@ export class ScatterGraph {
 
 }
 
+export class LineGraphMulti {
+    constructor (xyValues, title, seriesTitles) {
+        console.log(xyValues)
+        this.colours = [0x3EF4FA, 0xFF0000, 0x32CD32, 0xFFFF00, 0x6A0DAD, 0xFFA500, 0xffc0cb];
+        this.seriesTitles = seriesTitles;
+
+        if (xyValues[0].reduce((acc, elem) => isNaN(elem[0]) ? false : acc, true)) {
+            this.xValues = xyValues[0].map(elem => parseInt(elem[0]));
+        } else {
+            this.xValues = xyValues[0].map((_, index) => index);
+            this.xValuesString = xyValues[0].map(elem => elem[0]);
+        }
+
+        this.yValues = xyValues.map(series => series.map(elem => elem[1]))
+
+        this.maxVal = this.yValues.map(series => series.reduce((acc, elem) => elem > acc ? elem : acc)).reduce((acc, elem) => elem > acc ? elem : acc)
+        this.maxX = this.xValues.reduce((acc, elem) => elem > acc ? elem : acc);
+
+        this.formatValues()
+
+        this.graphs = this.yValues.map((series, index) => new LineGraph(series.map((elem, index) => [this.xValues[index], elem]), "", true, this.colours[index % 5]))
+
+        this.yAxis = createSimpleBox(-22,16, 240, 4, 10, 0xFFFFFF);
+        this.xAxis = createSimpleBox(132, -102, 4, 308, 10, 0xFFFFFF);
+
+        this.title = document.createElement('h2');
+        this.formatTitle(title, 230);
+
+        if (!isNaN(xyValues[0][0][0])) {
+            this.xLabels = this.formatLabels();
+        } else {
+            this.xLabels = this.formatLabelsString();
+        }
+        this.seriesLabels = this.formatSeriesLabels();
+    }
+
+    formatValues () {
+        if (this.maxVal < 100) {
+            this.ratioY  = 230 / (Math.ceil(this.maxVal/10) * 10);
+        } else if (this.maxVal < 1000) {
+            this.ratioY  = 230 / (Math.ceil(this.maxVal/100) * 100);
+        } else if (this.maxVal < 10000) {
+            this.ratioY  = 230 / (Math.ceil(this.maxVal/500) * 500);
+        } else {
+            this.ratioY  = 230 / (Math.ceil(this.maxVal/5000) * 5000);
+        }
+
+        if (this.maxX < 100) {
+            this.ratioX = 300 / this.maxX;
+        } else {
+            this.ratioX = 300 / this.maxX;
+        }
+
+        this.xValues = this.xValues.map((x_val) => parseInt(x_val) * this.ratioX - 20)
+
+        this.yValues = this.yValues.map(series => series.map((y_val) => parseInt(y_val) * this.ratioY ))
+    }
+
+    display(scene) {
+        this.graphs.forEach((graph) => graph.display(scene));
+        scene.addToScene(this.xAxis);
+        scene.addToScene(this.yAxis);
+
+        this.title.style.visibility = "visible";
+        this.xLabels.forEach(label => label.style.visibility = "visible")
+        this.seriesLabels.forEach(label => label.style.visibility = "visible")
+    }
+
+    hide(scene) {
+        this.graphs.forEach((graph) => graph.hide(scene));
+        scene.removeFromScene(this.xAxis);
+        scene.removeFromScene(this.yAxis);
+
+        this.title.style.visibility = "hidden";
+        this.xLabels.forEach(label => label.style.visibility = "hidden")
+        this.seriesLabels.forEach(label => label.style.visibility = "hidden")
+    }
+
+    update () {
+        this.title.style.top =  (35 + translationY) + "px";
+        this.title.style.left = (240 + translationX) + "px";
+
+        let xPos = []
+            if (isNaN(this.xLabels[0])) {
+                xPos = [580, 532, 474, 416, 358, 300]
+            } else {
+                xPos = [590, 532, 474, 416, 358]
+            }
+    
+        this.xLabels.forEach((shape, index) => {shape.style.top = (317 + translationY) + "px";
+                                                shape.style.left = (xPos[index] + translationX) + "px"})
+
+        let seriesPos = [70, 80, 90, 100, 110, 120, 130]
+        this.seriesLabels.forEach((shape, index) => {shape.style.left = (305 + translationX) + "px";
+                                                shape.style.top = (seriesPos[index] + translationY) + "px"})
+    }
+
+    createLabel(label, text, position) {
+        label.textContent = text;
+        label.style.position = "absolute";
+        label.style.top =  (317) + "px";
+        label.style.left = (position) + "px";
+        label.style.textAlign = "center";
+        label.style.color = "white";
+        label.style.fontSize = "12px";
+        label.style.zIndex = "1500";
+        label.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label.style.visibility = "hidden";
+
+        document.body.appendChild(label);
+
+        return label;
+    }
+
+    createSeriesLabel(label, text, position, colour) {
+        const colourList = ["#3EF4FA", "#FF0000", "#32CD32", "#FFFF00", "#6A0DAD", "#FFA500", "#ffc0cb"];
+
+        let label2 = label
+        label2.textContent = text;
+        label2.style.position = "absolute";
+        label2.style.left =  305 + "px";
+        label2.style.top = position + "px";
+        label2.style.textAlign = "center";
+        label2.style.color = colourList[colour];
+        label2.style.fontSize = "10px";
+        label2.style.zIndex = "1500";
+        label2.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label2.style.visibility = "hidden";
+
+        document.body.appendChild(label2);
+
+        return label2;
+    }
+
+    formatSeriesLabels () {
+        let positions = [70, 80, 90, 100, 110, 120, 130]
+
+        var labels = [...Array(this.seriesTitles.length).keys()].map(_ => document.createElement('h6')).map((label, index) => this.createSeriesLabel(label, this.seriesTitles[index], positions[index], index));
+
+        return labels;
+    }
+    
+    formatLabels() {
+        let values = [];
+
+        var label = document.createElement('h6');
+        values.push(this.createLabel(label, this.maxX, 590))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, Math.round(this.maxX - ((1/5) * this.maxX)), 532))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, Math.round(this.maxX - ((2/5) * this.maxX)), 474))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, Math.round(this.maxX - ((3/5) * this.maxX)), 416))
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, Math.round(this.maxX - ((4/5) * this.maxX)), 358))
+
+
+        return values;
+    }
+
+    formatLabelsString() {
+        let values = [];
+
+        var label = document.createElement('h6');
+        values.push(this.createLabel(label, this.xValuesString[this.xValuesString.length - 1], 580))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, this.xValuesString[Math.round(this.xValuesString.length - ((1/5) * this.xValuesString.length))], 532))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, this.xValuesString[Math.round(this.xValuesString.length - ((2/5) * this.xValuesString.length))], 474))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, this.xValuesString[Math.round(this.xValuesString.length - ((3/5) * this.xValuesString.length))], 416))
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, this.xValuesString[Math.round(this.xValuesString.length - ((4/5) * this.xValuesString.length))], 358))
+
+        label = document.createElement('h6');
+        values.push(this.createLabel(label, this.xValuesString[0], 300))
+
+        return values;
+    }
+
+    formatTitle(title, maxY) {
+        this.title.textContent = title;
+        this.title.style.position = "absolute";
+        this.title.style.top =  (35) + "px";
+        this.title.style.left = (240) + "px";
+        this.title.style.textAlign = "center";
+        this.title.style.color = "white";
+        this.title.style.fontSize = "28px";
+        this.title.style.zIndex = "1500";
+        this.title.style.fontFamily = "Arial, Helvetica, sans-serif";
+        this.title.style.visibility = "hidden";
+
+        document.body.appendChild(this.title);
+    }
+}
+
 export class LineGraph {
-    constructor (xyValues, title) {
+    constructor (xyValues, title, partOfMulti = false, colour = 0x3EF4FA) {
+        this.partOfMulti = partOfMulti;
+        this.colour = colour;
+
         this.yValues = xyValues.map(elem => elem[1])
 
         if (xyValues.reduce((acc, elem) => isNaN(elem[0]) ? false : acc, true)) {
-            this.xValues = xyValues.map(elem => elem[0]);
+            this.xValues = xyValues.map(elem => parseInt(elem[0]));
         } else {
             this.xValues = xyValues.map((_, index) => index);
             this.xValuesString = xyValues.map(elem => elem[0]);
@@ -566,24 +805,32 @@ export class LineGraph {
 
         this.ratioX;
         this.ratioY;
+        
 
-        this.title = document.createElement('h2');
-        this.formatTitle(title)
+        if (!partOfMulti) {
+            this.title = document.createElement('h2');
+            this.formatTitle(title);
 
-        this.formatValues();
+            this.formatValues();
 
-        this.graph = this.createGraph();
+            this.graph = this.createGraph();
+            
 
-        if (!isNaN(xyValues[0][0])) {
-            this.xLabels = this.formatLabels();
+            if (!isNaN(xyValues[0][0])) {
+                this.xLabels = this.formatLabels();
+            } else {
+                this.xLabels = this.formatLabelsString();
+            }
+            
+            this.yAxis = createSimpleBox(-22,16, 240, 4, 10, 0xFFFFFF);
+            this.xAxis = createSimpleBox(132, -102, 4, 308, 10, 0xFFFFFF);
         } else {
-            this.xLabels = this.formatLabelsString();
+            this.graph = this.createGraph();
         }
         
-        this.yAxis = createSimpleBox(-22,16, 240, 4, 10, 0xFFFFFF);
-        this.xAxis = createSimpleBox(132, -102, 4, 308, 10, 0xFFFFFF);
         
-        this.lines = this.xValues.map((x_val, index) => index > 0 ? new JoiningLine(this.xValues[index-1], this.yValues[index-1], this.xValues[index], this.yValues[index]) : new JoiningLine(0, 0, 0, 0))
+        this.lines = this.xValues.map((x_val, index) => index > 0 ? new JoiningLine(this.xValues[index-1], this.yValues[index-1], this.xValues[index], this.yValues[index], this.colour) : new JoiningLine(0, 0, 0, 0))
+
     }
 
     createGraph() {
@@ -592,9 +839,13 @@ export class LineGraph {
 
     formatValues () {
         if (this.maxVal < 100) {
-            this.ratioY = 230 / (Math.ceil(this.maxVal/10) * 10);
+            this.ratioY  = 230 / (Math.ceil(this.maxVal/10) * 10);
+        } else if (this.maxVal < 1000) {
+            this.ratioY  = 230 / (Math.ceil(this.maxVal/100) * 100);
+        } else if (this.maxVal < 10000) {
+            this.ratioY  = 230 / (Math.ceil(this.maxVal/500) * 500);
         } else {
-            this.ratioY = 230 / (Math.ceil(this.maxVal/100) * 100);
+            this.ratioY  = 230 / (Math.ceil(this.maxVal/5000) * 5000);
         }
 
         if (this.maxX < 100) {
@@ -670,26 +921,33 @@ export class LineGraph {
     }
 
     display(scene) {
-        // this.graph.forEach((shape) => shape.display(scene));
+        
         this.lines.forEach((line) => line.display(scene));
-        this.title.style.visibility = "visible";
 
-        scene.addToScene(this.xAxis);
-        scene.addToScene(this.yAxis);
+        if (!this.partOfMulti) {
+            this.title.style.visibility = "visible";
 
-        this.xLabels.forEach(label => label.style.visibility = "visible")
+            scene.addToScene(this.xAxis);
+            scene.addToScene(this.yAxis);
+
+            this.xLabels.forEach(label => label.style.visibility = "visible")
+        }
+        
 
     }
 
     hide(scene) {
         // this.graph.forEach((shape) => shape.hide(scene));
         this.lines.forEach((line) => line.hide(scene));
-        this.title.style.visibility = "hidden";
+        if (!this.partOfMulti) {
+            this.title.style.visibility = "hidden";
 
-        scene.removeFromScene(this.xAxis);
-        scene.removeFromScene(this.yAxis);
+            scene.removeFromScene(this.xAxis);
+            scene.removeFromScene(this.yAxis);
 
-        this.xLabels.forEach(label => label.style.visibility = "hidden")
+            this.xLabels.forEach(label => label.style.visibility = "hidden")
+        }
+        
     }
 
     formatTitle(title, maxY) {
@@ -706,10 +964,28 @@ export class LineGraph {
 
         document.body.appendChild(this.title);
     }
+
+    update () {
+        if (!this.partOfMulti) {
+            this.title.style.top =  (35 + translationY) + "px";
+            this.title.style.left = (240 + translationX) + "px";
+            let xPos = []
+            if (isNaN(this.xLabels[0])) {
+                xPos = [580, 532, 474, 416, 358, 300]
+            } else {
+                xPos = [590, 532, 474, 416, 358]
+            }
+    
+            this.xLabels.forEach((shape, index) => {shape.style.top = (317 + translationY) + "px";
+                                                    shape.style.left = (xPos[index] + translationX) + "px"})
+        }
+       
+    }
 }
 
 class JoiningLine {
-    constructor(startingX, startingY, finishingX, finishingY) {
+    constructor(startingX, startingY, finishingX, finishingY, colour = 0x3EF4FA) {
+        this.colour = colour;
         this.startingCoord = [startingX, startingY];
         this.finishCoord = [finishingX, finishingY];
 
@@ -728,32 +1004,34 @@ class JoiningLine {
     }
 
     createLine() {
-        let box = createSimpleBox(this.startingCoord[0] + ((this.length / 2) * Math.sin((Math.PI/2) - this.roation)), (this.finishCoord[1] + this.startingCoord[1])/2 - 100, 1.5, this.length, 2)
+        let box = createSimpleBox(this.startingCoord[0] + ((this.length / 2) * Math.sin((Math.PI/2) - this.roation)), (this.finishCoord[1] + this.startingCoord[1])/2 - 100, 2.5, this.length, 2, this.colour)
         
         box.rotation.z = this.roation;
+
+        //box.material.color = this.colour;
 
         return box;
     }
 
     display(scene) {
-        objects.push(this);
+        //objects.push(this);
 
         scene.addToScene(this.shape);
     }
 
     hide(scene) {
-        const index = objects.indexOf(this);
-        objects.splice(index, 1);
+        //const index = objects.indexOf(this);
+        //objects.splice(index, 1);
         
         scene.removeFromScene(this.shape)
     }
 
     onHover() {
-        this.shape.material.color.setHex( 0xFF0000);
+        //this.shape.material.color.setHex( 0xFF0000);
     }
 
     offHover() {
-        this.shape.material.color.setHex( 0x3EF4FA);
+        //this.shape.material.color.setHex( this.colour);
     }
 
     onClick() {
@@ -842,6 +1120,11 @@ export class Australia {
         this.title.style.visibility = "hidden";
 
         document.body.appendChild(this.title);
+    }
+    update () {
+        this.stateObjects.forEach((state) => state.update());
+        this.title.style.top =  (35 + translationY) + "px";
+        this.title.style.left = (240 + translationX) + "px";
     }
 }
 
@@ -989,6 +1272,33 @@ class State {
         //         object.material.color.set( 0x3EF4FA )
         //     }
         // })
+    }
+
+    update () {
+        const len = String(this.valueLabel.textContent).length - 1;
+        
+        if (this.filePath === "VictoriaModel.glb") {
+            this.valueLabel.style.top =  (240 + translationY) + "px";
+            this.valueLabel.style.left = (510 + translationX) - (len * 5) + "px";
+        } else if (this.filePath === "NSWModel.glb") {
+            this.valueLabel.style.top =  (200 + translationY) + "px";
+            this.valueLabel.style.left = (520 + translationX) - (len * 5)  + "px";
+        } else if (this.filePath === "QLDModel.glb") {
+            this.valueLabel.style.top =  (130 + translationY) + "px";
+            this.valueLabel.style.left = (500 + translationX) - (len * 5)  + "px";
+        } else if (this.filePath === "SAModel.glb") {
+            this.valueLabel.style.top =  (180 + translationY) + "px";
+            this.valueLabel.style.left = (440 + translationX) - (len * 5)  + "px";
+        } else if (this.filePath === "NTModel.glb") {
+            this.valueLabel.style.top =  (115 + translationY) + "px";
+            this.valueLabel.style.left = (435 + translationX) - (len * 5)  + "px";
+        } else if (this.filePath === "WAModel.glb") {
+            this.valueLabel.style.top =  (160 + translationY) + "px";
+            this.valueLabel.style.left = (355 + translationX) - (len * 5)  + "px";
+        } else if (this.filePath === "TasmaniaModel.glb") {
+            this.valueLabel.style.top =  (275 + translationY) + "px";
+            this.valueLabel.style.left = (515 + translationX) - (len * 5)  + "px";
+        }
     }
 }
 
@@ -1151,16 +1461,23 @@ function createRandomBarGraph(scene) {
 }
 
 let positions = []
+let fistX = 1000;
+let fistY = 1000;
+let translationX = 0;
+let translationY = 0;
 
 export function fingerPositionProcessor(scene, handValues) {
     const shape = getHandShape(handValues);
+    document.getElementById("chartLegend").style.opacity = .4;
     if (shape === "pointing") {
+        fistX = 1000;
+        fistY = 1000;
 
-        const pointerX = handValues[8][0];
-        const pointerY = handValues[8][1];
+        const pointerX = handValues[8][0] - translationX;
+        const pointerY = handValues[8][1] + translationY;
 
-        const thumbX = handValues[4][0];
-        const thumbY = handValues[4][1];
+        const thumbX = handValues[4][0] - translationX;
+        const thumbY = handValues[4][1] + translationY;
         
     
         objects.forEach(elem => isFingerOnShape(elem, pointerX, pointerY) 
@@ -1171,6 +1488,10 @@ export function fingerPositionProcessor(scene, handValues) {
                                             ? elem.onHover() 
                                             : elem.offHover());
     } else if (shape === "palm") {
+        objects.forEach(elem => elem.offHover());
+        fistX = 1000;
+        fistY = 1000;
+
         positions.push(handValues[0][0])
         
         if (handValues[0][0] < (positions[1] - 100)) {
@@ -1181,12 +1502,55 @@ export function fingerPositionProcessor(scene, handValues) {
         }
  
         
+    } else if (shape === "fist") {
+        objects.forEach(elem => elem.offHover());
+        if (fistX === 1000) {
+            fistX = handValues[9][0];
+            fistY = handValues[9][1];
+        }
+
+        if (scene.timeLine.index >= 0) {
+            if (handValues[9][0] > (-95 + translationX) && handValues[9][0] < (245 + translationX)) {
+                if (handValues[9][1] > (-65 - translationY) && handValues[9][1] < (190 - translationY)) {
+                    document.getElementById("chartLegend").style.opacity = .7;
+
+
+                    translationX += -1 * (fistX - handValues[9][0]);
+                    translationY += fistY - handValues[9][1];
+
+                    fistX = handValues[9][0];
+                    fistY = handValues[9][1];
+
+                    if (translationX > 5) {
+                        translationX = 5
+                    } 
+                    if (translationX < -225) {
+                        translationX = -225
+                    } 
+                    if (translationY > 115) {
+                        translationY = 115
+                    } 
+                    if (translationY < -50) {
+                        translationY = -50
+                    }
+                    scene.renderer.domElement.style.top = translationY + "px";
+                    scene.renderer.domElement.style.left = translationX + "px";
+
+                    document.getElementById("chartLegend").style.top = (50 + translationY) + "px";
+                    document.getElementById("chartLegend").style.left = (225 + translationX) + "px";
+
+                    scene.timeLine.timeLine[scene.timeLine.index].update();
+                }
+            }
+        }
+        
     }
     
                         
 }
 
 function isFingerOnShape(shape, pointerX, pointerY) {
+    console.log(shape)
     const shapeX = shape.position.x;
     const shapeY = shape.position.y;
 
@@ -1210,16 +1574,30 @@ function isFingerOnShape(shape, pointerX, pointerY) {
 
 function getHandShape (handPositions) {
     let pointerString = document.getElementById("handDetected");
-    if (handPositions[3][0] < handPositions[4][0] && handPositions[6][1] <= handPositions[8][1]) {
-        pointerString.textContent = "Hand Detected: Pointing";
-        return "pointing";
-    } else if (handPositions[6][1] > handPositions[8][1]) {
-        pointerString.textContent = "Hand Detected: Fist";
-        return "fist";
+    if (handPositions[4][0] <= handPositions[17][0]) {
+        if (handPositions[3][0] < handPositions[4][0] && handPositions[6][1] <= handPositions[8][1] && handPositions[6][1] <= handPositions[8][1]) {
+            pointerString.textContent = "Hand Detected: Pointing";
+            return "pointing";
+        } else if (handPositions[6][1] > handPositions[8][1]) {
+            pointerString.textContent = "Hand Detected: Fist";
+            return "fist";
+        } else {
+            pointerString.textContent = "Hand Detected: Palm";
+            return "palm";
+        }
     } else {
-        pointerString.textContent = "Hand Detected: Palm";
-        return "palm";
+        if (handPositions[3][0] > handPositions[4][0] && handPositions[6][1] <= handPositions[8][1]) {
+            pointerString.textContent = "Hand Detected: Pointing";
+            return "pointing";
+        } else if (handPositions[6][1] > handPositions[8][1]) {
+            pointerString.textContent = "Hand Detected: Fist";
+            return "fist";
+        } else {
+            pointerString.textContent = "Hand Detected: Palm";
+            return "palm";
+        }
     }
+    
 
 }
 

@@ -95,8 +95,8 @@ button {
 
 #graphInput {
     position: absolute;
-    left: 660px;
-    top: 40px;
+    left: 650px;
+    top: 10px;
     border-style: solid;
     border-color: black;
     border-width: 2px;
@@ -120,14 +120,14 @@ input {
 
 #downloadLink {
     position: absolute;
-    top: 470px;
-    left: 660px;
+    top: 465px;
+    left: 650px;
 }
 
 #successMessage {
     position: absolute;
     top: 412px;
-    left: 750px;
+    left: 740px;
     font-size: small;
     visibility: hidden;
 }
