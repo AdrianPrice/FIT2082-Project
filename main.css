@@ -28,7 +28,7 @@ video {
 
 p {
     position: absolute;
-    bottom: 5px;
+    top: 480px;
     left: 10px;
     font-family: Arial, Helvetica, sans-serif;
     font-size: larger;
@@ -83,13 +83,13 @@ button {
 
 #alphaSlider {
     position: absolute;
-    top: 500px;
-    left: 20px;
+    top: 492px;
+    left: 240px;
 }
 #alphaText {
     position: absolute;
-    top: 530px;
-    left: 15px;
+    top: 485px;
+    left: 240px;
     font-size: 10px;
 }
 
@@ -120,8 +120,11 @@ input {
 
 #downloadLink {
     position: absolute;
-    top: 465px;
-    left: 650px;
+    top: 496px;
+    left: 440px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 20px;
+    color: black;
 }
 
 #successMessage {
@@ -130,4 +133,19 @@ input {
     left: 740px;
     font-size: small;
     visibility: hidden;
+}
+
+#instructions {
+    position: absolute;
+    top: 540px;
+    left: 5px;
+    width:550px;
+}
+
+#drawing {
+    position: absolute;
+    z-index: 10000000000000;
+    width: 640px;
+    height: 480px;
+    background-color: red;
 }
