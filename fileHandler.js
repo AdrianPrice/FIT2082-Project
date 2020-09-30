@@ -33,7 +33,7 @@ function formatData(data) {
     
     let dataVal = data.split('\n');
     dataVal = dataVal.map(elem => elem.split(","))
-    dataVal = dataVal.map(elem => [elem[0], parseInt(elem[1])])
+    dataVal = dataVal.map(elem => [elem[0], parseFloat(elem[1])])
     return dataVal;
   } else if (document.getElementById("Scatter").checked) {
     let dataVal = data.split('\n');
@@ -50,7 +50,7 @@ function formatData(data) {
     datas = datas.map(series => series.split('\n'));
     datas.forEach(series => series.shift())
     datas = datas.map(series => series.map(elem => elem.split(",")))
-    datas = datas.map(series => series.map(elem => [elem[0], parseInt(elem[1])]))
+    datas = datas.map(series => series.map(elem => [elem[0], parseFloat(elem[1])]))
 
     return [seriesTitles, [datas]]
   }
@@ -95,6 +95,6 @@ function addGraph() {
     message.style.color = "red";
   }
 
-  setTimeout(() => message.style.visibility = "hidden", 2000)
+  setTimeout(() => message.style.visibility = "hidden", 10000)
   
 }
