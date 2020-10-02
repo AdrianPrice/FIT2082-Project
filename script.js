@@ -14,6 +14,7 @@ export class Scene {
         this.renderer = this.createRenderer();
         this.light = this.createLight();
         this.timeLine = new TimeLine(this);
+        this.draw = new Drawing(0xFF0000, 3, this);
     }
 
     /**
@@ -629,7 +630,6 @@ export class ScatterGraph {
 
 export class LineGraphMulti {
     constructor (xyValues, title, seriesTitles) {
-        console.log(xyValues)
         this.colours = [0xFFFF00, 0xFF0000, 0x3EF4FA, 0x32CD32, 0x6A0DAD, 0xFFA500, 0xffc0cb];
         this.seriesTitles = seriesTitles;
 
@@ -909,7 +909,6 @@ export class LineGraph {
             this.xValuesString = xyValues.map(elem => elem[0]);
             this.endPoint = [this.xValues[this.xValues.length - 1] ,xyValues[xyValues.length - 1][1]];
         }
-        console.log(maxY)
         this.maxVal = maxY === 0 ? this.yValues.reduce((acc, currenElem) => currenElem > acc ? currenElem : acc): maxY;
         this.maxX = this.xValues.reduce((acc, elem) => elem > acc ? elem : acc);
 
@@ -940,12 +939,8 @@ export class LineGraph {
         } else {
             this.calculateRatios();
 
-            console.log(this.endPoint)
-
-            console.log(this.colour.toString(16))
-
             this.endPoint = new Point(this.endPoint[0], this.endPoint[1], this.ratioY, "#" + this.colour.toString(16));
-            console.log(this.endPoint)
+    
 
             this.graph = this.createGraph();
         }
@@ -1541,6 +1536,109 @@ class State {
     }
 }
 
+class Drawing {
+    constructor (colour, thickness, scene = undefined) {
+        this.colour = colour;
+        this.drawings = [];
+        this.thickness = thickness;
+        this.scene = scene;
+        
+        this.previousX = -1;
+        this.previousY = -1;
+    }
+
+    draw (positionX, positionY) {
+        if (this.previousX != -1 && this.previousY != -1) {
+            const stroke = new DrawingLine (this.previousX, this.previousY, positionX, positionY, this.thickness, this.colour);
+            this.drawings.push(stroke);
+        
+            stroke.display(this.scene);
+        }
+
+        this.previousX = positionX;
+        this.previousY = positionY;
+        
+    }
+
+    changeThickness (newThickness) {
+        this.thickness = newThickness;
+    }
+    
+    changeColour (newColour) {
+        this.colour = newColour;
+    }
+
+    changeScene (newScene) {
+        this.scene = newScene;
+    }
+
+    removePrevious () {
+        this.previousX = -1;
+        this.previousY = -1;
+    }
+
+    clearDrawings () {
+        this.drawings.forEach(line => line.hide(this.scene));
+    }
+}
+
+class DrawingLine {
+    constructor(startingX, startingY, finishingX, finishingY, thickness, colour = 0x3EF4FA) {
+        this.colour = colour;
+        this.thickness = thickness;
+
+        this.startingCoord = [startingX, startingY];
+        this.finishCoord = [finishingX, finishingY];
+
+        this.length = this.calculateLength() * 1.2;
+        this.roation = this.calculateAngle();
+
+        this.shape = this.createLine();
+    }
+
+    calculateLength() {
+        return Math.sqrt(Math.pow((this.finishCoord[0] - this.startingCoord[0]), 2) + Math.pow((this.finishCoord[1] - this.startingCoord[1]), 2))
+    }
+
+    calculateAngle() {
+        return Math.atan((this.finishCoord[1] - this.startingCoord[1]) / (this.finishCoord[0] - this.startingCoord[0]));
+    }
+
+    createLine() {
+        let box = createSimpleBox(this.startingCoord[0] + ((this.length / 2) * Math.sin((Math.PI/2) - this.roation)), (this.finishCoord[1] + this.startingCoord[1])/2, this.thickness, this.length, this.thickness, this.colour)
+        box.rotation.z = this.roation;
+        box.position.z = 5;
+
+        //box.material.color = this.colour;
+
+        return box;
+    }
+
+    display(scene) {
+        //objects.push(this);
+
+        scene.addToScene(this.shape);
+    }
+
+    hide(scene) {
+        //const index = objects.indexOf(this);
+        //objects.splice(index, 1);
+        
+        scene.removeFromScene(this.shape)
+    }
+
+    onHover() {
+        //this.shape.material.color.setHex( 0xFF0000);
+    }
+
+    offHover() {
+        //this.shape.material.color.setHex( this.colour);
+    }
+
+    onClick() {
+    }
+}
+
 export class Button {
     constructor(width, height, xPos, yPos, text, scene) {
         this.width = width;
@@ -1700,6 +1798,7 @@ function createRandomBarGraph(scene) {
 }
 
 let positions = []
+let positionsY = []
 let fistX = 1000;
 let fistY = 1000;
 let translationX = 0;
@@ -1709,40 +1808,9 @@ export function fingerPositionProcessor(scene, handValues) {
     const shape = getHandShape(handValues);
 
     document.getElementById("chartLegend").style.opacity = .4;
-    if (shape === "pointing") {
-        fistX = 1000;
-        fistY = 1000;
-
-        const pointerX = handValues[8][0] - translationX;
-        const pointerY = handValues[8][1] + translationY;
-
-        const thumbX = handValues[4][0] - translationX;
-        const thumbY = handValues[4][1] + translationY;
-        
-    
-        objects.forEach(elem => isFingerOnShape(elem, pointerX, pointerY) 
-                                    ? isFingerOnShape(elem, thumbX, thumbY) 
-                                            ? elem.onClick() 
-                                            : elem.onHover() 
-                                    : isFingerOnShape(elem, thumbX, thumbY)
-                                            ? elem.onHover() 
-                                            : elem.offHover());
-    } else if (shape === "palm") {
-        objects.forEach(elem => elem.offHover());
-        fistX = 1000;
-        fistY = 1000;
-
-        positions.push(handValues[0][0])
-        
-        if (handValues[0][0] < (positions[1] - 100)) {
-            scene.nextPane();
-            positions = []
-        } else {
-            setTimeout(() => positions.shift(), 2000)
-        }
- 
-        
-    } else if (shape === "fist") {
+    if (shape === "fist") {
+        positionsY = []
+        scene.draw.removePrevious();
         objects.forEach(elem => elem.offHover());
         if (fistX === 1000) {
             fistX = handValues[9][0];
@@ -1786,9 +1854,57 @@ export function fingerPositionProcessor(scene, handValues) {
             }
         }
         
-    }
+    } else if (shape === "pointing") {
+        positionsY = []
+
+        if (isDrawing) {
+            scene.draw.draw((handValues[8][0] + handValues[4][0])/2 - translationX, (handValues[8][1] + handValues[4][1])/2 + translationY);
+        } else {
+            scene.draw.removePrevious();
+        fistX = 1000;
+        fistY = 1000;
+
+        const pointerX = handValues[8][0] - translationX;
+        const pointerY = handValues[8][1] + translationY;
+
+        const thumbX = handValues[4][0] - translationX;
+        const thumbY = handValues[4][1] + translationY;
+        
     
-                        
+        objects.forEach(elem => isFingerOnShape(elem, pointerX, pointerY) 
+                                    ? isFingerOnShape(elem, thumbX, thumbY) 
+                                            ? elem.onClick() 
+                                            : elem.onHover() 
+                                    : isFingerOnShape(elem, thumbX, thumbY)
+                                            ? elem.onHover() 
+                                            : elem.offHover());
+        }
+        
+    } else if (shape === "palm") {
+        scene.draw.removePrevious();
+        objects.forEach(elem => elem.offHover());
+        fistX = 1000;
+        fistY = 1000;
+
+        positions.push(handValues[0][0])
+        positionsY.push(handValues[0][1])
+        
+        if (handValues[0][0] < (positions[1] - 100)) {
+            scene.nextPane();
+            positions = []
+        } else {
+            setTimeout(() => positions.shift(), 2000)
+        }
+
+        if (handValues[0][1] > (positionsY[1] + 100)) {
+            scene.draw.clearDrawings();
+            positionsY = []
+        } else {
+            setTimeout(() => positionsY.shift(), 2000)
+        }
+    }     
+    
+    
 }
 
 function isFingerOnShape(shape, pointerX, pointerY) {
@@ -1810,7 +1926,6 @@ function isFingerOnShape(shape, pointerX, pointerY) {
         } 
     }
     return false;
-    
 }
 
 function getHandShape (handPositions) {
@@ -1822,15 +1937,12 @@ function getHandShape (handPositions) {
         } else if (handPositions[6][1] > handPositions[8][1]) {
             pointerString.textContent = "Hand Detected: Fist";
             return "fist";
-        // } else if (distanceBetweenTwoLandmarks(handPositions[8], handPositions[12]) > distanceBetweenTwoLandmarks(handPositions[8], handPositions[4]) ) {
-        //     pointerString.textContent = "Hand Detected: Pinch";
-        //     return "pinch";
         } else {
             pointerString.textContent = "Hand Detected: Palm";
             return "palm";
         }
     } else {
-        if (handPositions[3][0] > handPositions[4][0] && handPositions[6][1] <= handPositions[8][1]) {
+        if (handPositions[3][0] > handPositions[4][0] && handPositions[6][1] <= handPositions[8][1] && handPositions[6][1] <= handPositions[8][1]) {
             pointerString.textContent = "Hand Detected: Pointing";
             return "pointing";
         } else if (handPositions[6][1] > handPositions[8][1]) {
@@ -1839,12 +1951,28 @@ function getHandShape (handPositions) {
         } else {
             pointerString.textContent = "Hand Detected: Palm";
             return "palm";
-        }
     }
+}
     
 
 }
 
 function distanceBetweenTwoLandmarks(landmark1, landmark2) {
-    return Math.sqrt(Math.pow(landmark2[0] - landmark1[0], 2) + Math.pow(landmark2[1] - landmark1[1], 2));
+    //return Math.sqrt(Math.pow(landmark2[0] - landmark1[0], 2) + Math.pow(landmark2[1] - landmark1[1], 2));
+    return Math.abs(landmark1[1] - landmark2[1])
 }
+
+let isDrawing = false;
+document.addEventListener("keydown", event => {
+    if (event.key === 'd') {
+      isDrawing = true;
+      console.log("d")
+    }
+  });
+
+  document.addEventListener("keyup", event => {
+    if (event.key === 'd') {
+      isDrawing = false;
+      console.log("not d")
+    }
+  });
