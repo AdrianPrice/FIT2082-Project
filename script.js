@@ -118,13 +118,14 @@ export class TimeLine {
                 this.timeLine[this.index].display(this.scene);
             }
             myChart.canvas.style.visibility = "visible";
+        } else {
+            this.timeLine[this.index].hide(this.scene);
             
-            if (this.index === this.timeLine.length - 1) {
-                return true;
-            }
+            this.index = 0;
+            this.timeLine[this.index].update();
+            this.timeLine[this.index].display(this.scene);
+            myChart.canvas.style.visibility = "visible";
         }
-
-        return false;
     }
 }
 
@@ -196,8 +197,10 @@ export class BarGraph {
         return label;
     }
 
-    display(scene) {
-        this.graph.forEach((shape) => shape.display(scene));
+    async display(scene) {
+        // this.graph.forEach(async (shape) => {await new Promise(r => shape.display(scene));
+        //                                      await new Promise (r => setTimeout(r, 1000));
+        //                                     console.log("NEXT")});
         this.title.style.visibility = "visible";
 
         scene.addToScene(this.yAxis);
@@ -205,6 +208,20 @@ export class BarGraph {
 
         this.xLabels.forEach(label => label.style.visibility = "visible")
         this.yLabels.forEach(label => label.style.visibility = "visible")
+
+        let group = [];
+        let i = 0;
+
+        for (const graph of this.graph) {
+            i ++;
+            group.push(graph);
+            if (i % Math.ceil(this.yValues.length * 0.020) === 0) {
+                await group.map(graph => new Promise(r => graph.display(r, scene)))[Math.ceil(this.yValues.length * 0.020) - 1];
+                group = [];
+            }
+            
+            }
+        
     }
 
     hide(scene) {
@@ -329,29 +346,104 @@ class Bar {
         this.ratio = ratio;
         this.width = width;
 
-        this.shape = this.createBar(yVal);
+        this.shape = createSimpleBox((((this.index)) * this.width) + (this.width/2) - 20, - 100, 1, this.width, 10)
 
         this.position = {
-            y: this.shape.position.y,
+            y: this.shape.position.y + (this.yVal/2),
             x: this.shape.position.x
         };
 
         this.geometry = {
-            parameters: this.shape.geometry.parameters
+            parameters: {
+                width: this.width,
+                height: this.yVal
+            }
         };
 
         this.valueLabel = document.createElement('h6');
         this.formatValueLabel();
+
+        this.promises = [...Array(2 * parseInt(this.yVal)).keys()].map((_, i)  => new Promise (r => setTimeout(r, 100 * i) ))
+        this.promise = new Promise (r => setTimeout(r, 1000)) 
+        this.promisesIndex = 0;
     }
 
     createBar() {
         return createSimpleBox((((this.index)) * this.width) + (this.width/2) - 20, - 100 + this.yVal / 2, this.yVal, this.width, 10)
     }
 
-    display(scene) {
+    async display(r, scene) {
         objects.push(this);
-
         scene.addToScene(this.shape);
+        
+        await new Promise (r => this.animate(r, this.shape, this.yVal))
+
+        return r("done")
+    }
+
+    async animate2 (r, shape, maxHeight) {
+        const intervals = []
+        for (var i = 0; i < 20; i++)
+            intervals.push(setInterval(this.increaseSize(shape, maxHeight), 1));
+        
+        setTimeout(() => intervals = [], 2000);
+
+        return r
+    }
+
+    increaseSize = (shape, maxHeight) => () => {
+        const object = shape;
+        if ((object.scale.y * object.geometry.parameters.height) < maxHeight) {
+            if (((object.scale.y + 500) * object.geometry.parameters.height) > maxHeight) {
+                let currentScale = object.scale.y
+                object.scale.x = 1;
+                object.scale.y = maxHeight;
+                object.scale.z = 1;
+
+                object.position.y = object.position.y + (((object.scale.y * object.geometry.parameters.height) - ((currentScale) * object.geometry.parameters.height))/2)
+            } else {
+                object.scale.x = 1;
+                object.scale.y = object.scale.y + 500;
+                object.scale.z = 1;
+
+                object.position.y = object.position.y + (((object.scale.y * object.geometry.parameters.height) - ((object.scale.y-500) * object.geometry.parameters.height))/2)
+            }
+        }
+    }
+
+    async animate (r, shape, maxHeight) {
+        const object = shape;
+        while ((object.scale.y * object.geometry.parameters.height) < maxHeight) {
+            if (((object.scale.y + 300) * object.geometry.parameters.height) > maxHeight) {
+                let currentScale = object.scale.y
+                object.scale.x = 1;
+                object.scale.y = maxHeight;
+                object.scale.z = 1;
+
+                object.position.y = object.position.y + (((object.scale.y * object.geometry.parameters.height) - ((currentScale) * object.geometry.parameters.height))/2)
+            } else {
+                object.scale.x = 1;
+                object.scale.y = object.scale.y + 300;
+                object.scale.z = 1;
+
+                object.position.y = object.position.y + (((object.scale.y * object.geometry.parameters.height) - ((object.scale.y-300) * object.geometry.parameters.height))/2)
+            }
+            
+
+            
+            
+            await new Promise (r => setTimeout(r, 0));
+            this.promisesIndex += 1
+        }
+        return r("done");
+        // if ((shape.scale.y * shape.geometry.parameters.height) >= maxHeight) {
+            
+        // } else { 
+
+           
+
+        //     this.animate(r, shape, maxHeight)
+        // }
     }
 
     hide(scene) {
@@ -647,7 +739,7 @@ export class LineGraphMulti {
 
         this.formatValues()
         
-        this.graphs = this.yValues.map((series, index) => new LineGraph(series.map((elem, index) => [this.xValues[index], elem]), "", true, this.colours[index % 7], this.maxVal))
+        this.graphs = this.yValues.map((series, index) => new LineGraph(series.map((elem, index) => [this.xValues[index], elem]), this.seriesTitles[index], true, this.colours[index % 7], this.maxVal))
 
         this.yAxis = createSimpleBox(-22,16, 240, 4, 10, 0xFFFFFF);
         this.xAxis = createSimpleBox(132, -102, 4, 308, 10, 0xFFFFFF);
@@ -939,7 +1031,7 @@ export class LineGraph {
         } else {
             this.calculateRatios();
 
-            this.endPoint = new Point(this.endPoint[0], this.endPoint[1], this.ratioY, "#" + this.colour.toString(16));
+            this.endPoint = new Point(this.endPoint[0], this.endPoint[1], this.ratioY, "#" + this.colour.toString(16), title);
     
 
             this.graph = this.createGraph();
@@ -1224,9 +1316,11 @@ class JoiningLine {
 }
 
 class Point {
-    constructor (xVal, yVal, ratioY = 0, colour = "#FFFFFF") {
+    constructor (xVal, yVal, ratioY = 0, colour = "#FFFFFF", seriesTitle = "") {
         this.xVal = xVal;
         this.yVal = yVal;
+
+        this.title = seriesTitle;
 
         this.colour = colour;
 
@@ -1237,8 +1331,8 @@ class Point {
 
         this.geometry = {
             parameters: {
-                width: this.isLine ? 50 : 10,
-                height: this.isLine ? 30 : 10
+                width: this.isLine ? 50 : 20,
+                height: this.isLine ? 25 : 10
             }
         };
 
@@ -1250,8 +1344,12 @@ class Point {
         if (this.isLine) {
             this.valueLabel = document.createElement('h6');
             this.formatValueLabel();
+
+            this.seriesTitle = document.createElement('h6');
+            this.formatSeriesTitle();
         } else {
             this.valueLabel = 0;
+            this.seriesTitle = 0
         }
         
     }
@@ -1263,15 +1361,29 @@ class Point {
     formatValueLabel() {
         this.valueLabel.textContent = this.yVal/this.ratio;
         this.valueLabel.style.position = "absolute";
-        this.valueLabel.style.top =  (280 - this.yVal) + "px";
-        this.valueLabel.style.left = (590) + "px";
-        this.valueLabel.style.color = this.colour;
-        this.valueLabel.style.fontSize = "15px";
+        this.valueLabel.style.top =  (268 - this.yVal) + "px";
+        this.valueLabel.style.left = (580) + "px";
+        this.valueLabel.style.color = "white";
+        this.valueLabel.style.fontSize = "18px";
         this.valueLabel.style.zIndex = "1500";
         this.valueLabel.style.fontFamily = "Arial, Helvetica, sans-serif";
         this.valueLabel.style.visibility = "hidden";
 
         document.body.appendChild(this.valueLabel);
+    }
+
+    formatSeriesTitle () {
+        this.seriesTitle.textContent = this.title;
+        this.seriesTitle.style.position = "absolute";
+        this.seriesTitle.style.top =  (275 - this.yVal) + "px";
+        this.seriesTitle.style.left = (610 - (6.24 * this.title.length)) + "px";
+        this.seriesTitle.style.color = "white";
+        this.seriesTitle.style.fontSize = "12px";
+        this.seriesTitle.style.zIndex = "1500";
+        this.seriesTitle.style.fontFamily = "Arial, Helvetica, sans-serif";
+        this.seriesTitle.style.visibility = "hidden";
+
+        document.body.appendChild(this.seriesTitle);
     }
 
     display(scene) {
@@ -1298,6 +1410,7 @@ class Point {
 
         if (this.isLine) {
             this.valueLabel.style.visibility = "visible";
+            this.seriesTitle.style.visibility = "visible";
         }
         
     }
@@ -1307,6 +1420,7 @@ class Point {
         
         if (this.isLine) {
             this.valueLabel.style.visibility = "hidden";
+            this.seriesTitle.style.visibility = "hidden";
         }
         
     }
@@ -1318,6 +1432,8 @@ class Point {
         if (this.isLine) {
             this.valueLabel.style.top = ((280 - this.yVal) + translationY) + "px";
             this.valueLabel.style.left = (590 + translationX) + "px";
+            this.seriesTitle.style.top =  (275 - this.yVal) + translationY + "px";
+            this.seriesTitle.style.left = (610 - (6.24 * this.title.length)) + translationX + "px";
         }
         
     }
@@ -1872,12 +1988,8 @@ export function fingerPositionProcessor(scene, handValues) {
         
     
         objects.forEach(elem => isFingerOnShape(elem, pointerX, pointerY) 
-                                    ? isFingerOnShape(elem, thumbX, thumbY) 
-                                            ? elem.onClick() 
-                                            : elem.onHover() 
-                                    : isFingerOnShape(elem, thumbX, thumbY)
-                                            ? elem.onHover() 
-                                            : elem.offHover());
+                                    ? elem.onHover() 
+                                    : elem.offHover());
         }
         
     } else if (shape === "palm") {
@@ -1966,13 +2078,11 @@ let isDrawing = false;
 document.addEventListener("keydown", event => {
     if (event.key === 'd') {
       isDrawing = true;
-      console.log("d")
     }
   });
 
   document.addEventListener("keyup", event => {
     if (event.key === 'd') {
       isDrawing = false;
-      console.log("not d")
     }
   });
