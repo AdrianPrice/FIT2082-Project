@@ -362,10 +362,6 @@ class Bar {
 
         this.valueLabel = document.createElement('h6');
         this.formatValueLabel();
-
-        this.promises = [...Array(2 * parseInt(this.yVal)).keys()].map((_, i)  => new Promise (r => setTimeout(r, 100 * i) ))
-        this.promise = new Promise (r => setTimeout(r, 1000)) 
-        this.promisesIndex = 0;
     }
 
     createBar() {
@@ -433,7 +429,6 @@ class Bar {
             
             
             await new Promise (r => setTimeout(r, 0));
-            this.promisesIndex += 1
         }
         return r("done");
         // if ((shape.scale.y * shape.geometry.parameters.height) >= maxHeight) {
@@ -1188,9 +1183,9 @@ export class LineGraph {
         return values;
     }
 
-    display(scene) {
+    async display(scene) {
         
-        this.lines.forEach((line) => line.display(scene));
+        //this.lines.forEach((line) => line.display(scene));
         this.endPoint.display(scene);
 
         if (!this.partOfMulti) {
@@ -1201,6 +1196,18 @@ export class LineGraph {
 
             this.xLabels.forEach(label => label.style.visibility = "visible")
             this.yLabels.forEach(label => label.style.visibility = "visible")
+        }
+        let group = [];
+        let i = 0;
+
+        for (const line of this.lines) {
+            i ++;
+            group.push(line);
+            if (i % Math.ceil(this.lines.length * 0.020) === 0) {
+                await group.map(line => new Promise(r => line.display(r, scene)))[Math.ceil(this.lines.length * 0.015) - 1];
+                group = [];
+            }
+            
         }
         
 
@@ -1290,10 +1297,51 @@ class JoiningLine {
         return box;
     }
 
-    display(scene) {
+    async display(r, scene) {
         //objects.push(this);
 
         scene.addToScene(this.shape);
+
+        await new Promise (r => setTimeout(r, 0));
+
+        console.log("HI")
+
+        //await new Promise (r => this.animate(r, this.shape, this.length))
+
+        return r("done")
+    }
+
+    async animate (r, shape, maxHeight) {
+        const object = shape;
+        
+        while ((object.scale.x * object.geometry.parameters.width) < maxHeight) {
+            if (((object.scale.x + 300) * object.geometry.parameters.width) > maxHeight) {
+                let currentScale = object.scale.x
+                console.log(Math.cos(this.rotation))
+                object.scale.x = Math.cos(this.roation) * maxHeight;
+                object.scale.y = Math.sin(this.roation) * maxHeight;;
+                object.scale.z = 1;
+
+                object.position.x = object.position.x + (((object.scale.x * object.geometry.parameters.width) - ((currentScale) * object.geometry.parameters.width))/2)
+
+            } else {
+                object.scale.x = object.scale.x + 300;
+                object.scale.y = 1
+                object.scale.z = 1;
+
+                object.position.x = object.position.x + (((object.scale.x * object.geometry.parameters.width) - ((object.scale.x-300) * object.geometry.parameters.width))/2)
+            }
+            break;
+        }
+        return r("done");
+        // if ((shape.scale.y * shape.geometry.parameters.height) >= maxHeight) {
+            
+        // } else { 
+
+           
+
+        //     this.animate(r, shape, maxHeight)
+        // }
     }
 
     hide(scene) {
