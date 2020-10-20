@@ -1,7 +1,6 @@
 body {
     margin: 0;
     height: 100vh;
-    
 }
 
 centre {
@@ -17,9 +16,11 @@ canvas {
 }
 
 #webcamPlaceholder {
-    width: 800px;
-    height: 450px;
+    width: 640px;
+    height: 480px;
 }
+
+
 
 video {
     -webkit-transform: scaleX(-1);
@@ -53,7 +54,7 @@ form {
     position: absolute;
     top: 20px;
     left: 660px;
-    z-index: 10000000000;
+    z-index: 1000000;
 }
 
 input {
@@ -76,7 +77,7 @@ button {
     position: absolute;
     left: 225px;
     top: 50px;
-    height: 255px !important;
+    height: 275px !important;
     width: 340px !important;
     visibility: hidden;
 }
@@ -135,17 +136,71 @@ input {
     visibility: hidden;
 }
 
-#instructions {
-    position: absolute;
-    top: 540px;
-    left: 5px;
-    width:550px;
-}
-
 #drawing {
     position: absolute;
     z-index: 10000000000000;
     width: 640px;
     height: 480px;
     background-color: red;
+}
+
+#welcomePage {
+    height: 100vh;
+    width: 100%;
+    opacity: 80%;
+    background-color: black;
+    z-index: 9999999999999999999999999999999999;
+    position: absolute;
+}
+
+#title {
+    z-index: 9999999999999999999999999999999999;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: larger;
+    text-align: center;
+    margin:auto;
+    line-height:50px;
+    vertical-align:middle;
+    opacity: 100%;
+}
+
+#para {
+    z-index: 9999999999999999999999999999999999;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: smaller;
+    text-align: center;
+    margin:auto;
+    vertical-align:middle;
+    opacity: 100%;
+    padding-top: 20px;
+}
+
+#message {
+    z-index: 9999999999999999999999999999999999;
+    position: absolute;
+    top:100px;
+    left:30%;
+    height: 200px;
+    width: 600px;
+    text-align:center;
+    opacity: 100% !important;
+}
+
+#instructions {
+    padding-top: 10px;
+    height: 150px;
+}
+
+#exit {
+    width: 20px;
+    z-index: 99999999999999999999999999999999999;
+    position: absolute;
+    right: 20px;
+    top:20px;
+}
+
+#exit:hover {
+    cursor: pointer;
 }

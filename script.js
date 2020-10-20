@@ -15,6 +15,8 @@ export class Scene {
         this.light = this.createLight();
         this.timeLine = new TimeLine(this);
         this.draw = new Drawing(0xFF0000, 3, this);
+        this.menuRight = new MenuRight(this);
+        this.menuLeft = new MenuLeft(this);
     }
 
     /**
@@ -76,10 +78,8 @@ export class Scene {
     addToTimeLine(graph) {
         this.timeLine.addToTimeLine(graph);
 
-        if (this.buttonHidden) {
-            //this.nextButton.display(this);
-            //this.buttonHidden = false;
-        }
+        this.menuRight.addGraph(graph.title.textContent);
+        this.menuLeft.addGraph(graph.title.textContent);
     }
 
     nextPane() {
@@ -87,6 +87,399 @@ export class Scene {
             //this.button.hide(this);
             //this.buttonHidden = true;
         };
+    }
+}
+
+class MenuRight {
+    constructor (scene) {
+        this.scene = scene;
+
+        this.numberOfOptions = 0;
+        this.menuItems = [];
+    }
+
+    addGraph (title) {
+        const item = new MenuItemRight(this.numberOfOptions, title, this.scene);
+
+        this.menuItems.push(item);
+
+        this.numberOfOptions += 1;
+    }
+
+    peek () {
+        this.menuItems.forEach(item => item.peek());
+    }
+
+    display () {
+        this.menuItems.forEach(item => item.display());
+    }
+
+    hide () {
+        this.menuItems.forEach(item => item.hide());
+    }
+
+    update () {
+        this.menuItems.forEach(item => item.update());
+    }
+}
+
+class MenuItemRight {
+    constructor (position, title, scene) {
+        this.index = position;
+        this.title = title.split(' ');
+        this.scene = scene;
+
+        this.shapes = this.createShape();
+        this.label = this.title.length == 1 ? this.formatTitle(this.title) : this.formatTitleSplit(this.title) ;
+
+        this.position = {
+            y: this.shapes[0].position.y,
+            x: this.shapes[0].position.x - 100
+        };
+
+        this.geometry = {
+            parameters: {
+                width: 100,
+                height: 40
+            }
+        };
+        this.clickActive = true;
+    }
+
+    createShape () {
+        let widthBox = 100;
+        let heightBox = 40;
+        let posXBox = 380;
+        let posYBox = 190 - (this.index * 45);
+
+        let widthSide = 10;
+        let heightSide = heightBox;
+        let posXSide = posXBox - (widthBox/2) - (widthSide/2);
+        let posYSide = posYBox;
+        
+        
+        const box = createSimpleBox(posXBox, posYBox, heightBox, widthBox, 10, 0x000000);
+        const side = createSimpleBox(posXSide, posYSide, heightSide, widthSide, 10, 0xFFFFFF);
+
+        this.scene.addToScene(box);
+        this.scene.addToScene(side);
+
+        objects.push(this);
+
+        return [box, side];
+    }
+
+    formatTitle (title) {
+        let label = document.createElement('h2');
+        label.textContent = title;
+        label.style.position = "absolute";
+        label.style.top =  (35 + (this.index * 45)) + "px";
+        label.style.left = ((380 + 320 - (50))) + "px";
+        label.style.textAlign = "center";
+        label.style.color = "white";
+        label.style.fontSize = "12px";
+        label.style.zIndex = "2000";
+        label.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label.style.visibility = "visible";
+
+        document.body.appendChild(label);
+
+        return [label];
+    }
+
+    formatTitleSplit (title) {
+        let label = document.createElement('h2');
+        label.textContent = title[0];
+        label.style.position = "absolute";
+        label.style.top =  (27 + (this.index * 45)) + "px";
+        label.style.left = ((380 + 320 - (50))) + "px";
+        label.style.textAlign = "center";
+        label.style.color = "white";
+        label.style.fontSize = "12px";
+        label.style.zIndex = "2000";
+        label.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label.style.visibility = "visible";
+
+        document.body.appendChild(label);
+
+        let label2 = document.createElement('h2');
+        label2.textContent = title[1];
+        label2.style.position = "absolute";
+        label2.style.top =  (42 + (this.index * 45)) + "px";
+        label2.style.left = ((380 + 320 - (50))) + "px";
+        label2.style.textAlign = "center";
+        label2.style.color = "white";
+        label2.style.fontSize = "12px";
+        label2.style.zIndex = "2000";
+        label2.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label2.style.visibility = "visible";
+
+        document.body.appendChild(label2);
+
+        return [label, label2];
+    }
+
+    async peek () {
+        if (this.shapes[0].position.x >= 380) {
+            let i = 0;
+            while (i < 5) {
+                this.shapes[0].position.x -= 4;
+                this.shapes[1].position.x -= 4;
+
+                this.label.forEach(label => label.style.left = parseInt(label.style.left) - 4 + "px");
+
+                await new Promise (r => setTimeout(r, 0));
+                i ++;
+            }
+        }
+    }
+
+    async hide () {
+        let i = 0
+        if (this.shapes[0].position.x <= 360) {
+            while (this.shapes[0].position.x <= 380 && i < 10 ) {
+                this.shapes[0].position.x += 2;
+                this.shapes[1].position.x += 2;
+
+                this.label.forEach(label => label.style.left = parseInt(label.style.left) + 2 + "px");
+
+                await new Promise (r => setTimeout(r, 0));
+                i++;
+            }
+            i = 0
+        }
+    }
+
+    async display () {
+        let i = 0;
+        while (this.shapes[0].position.x >= 380 - 120 && i < 10) {
+            this.shapes[0].position.x -= 4;
+            this.shapes[1].position.x -= 4;
+
+            this.label.forEach(label => label.style.left = parseInt(label.style.left) - 4 + "px");
+
+            await new Promise (r => setTimeout(r, 0));
+            i++;
+        }
+    }
+
+    onHover () {
+        if (this.clickActive) {
+
+            this.scene.timeLine.swapGraph(this.index);
+            this.shapes[0].material.color.setHex( 0xFF0000);
+
+            this.clickActive = false;
+
+            setTimeout(() => this.shapes[0].material.color.setHex( 0x000000), 4000);
+            setTimeout(() => this.clickActive = true, 4000);
+        }
+        
+    }
+
+    offHover () {
+
+    }
+
+    update() {
+    }
+}
+
+class MenuLeft {
+    constructor (scene) {
+        this.scene = scene;
+
+        this.numberOfOptions = 0;
+        this.menuItems = [];
+    }
+
+    addGraph (title) {
+        const item = new MenuItemLeft(this.numberOfOptions, title, this.scene);
+
+        this.menuItems.push(item);
+
+        this.numberOfOptions += 1;
+    }
+
+    peek () {
+        this.menuItems.forEach(item => item.peek());
+    }
+
+    display () {
+        this.menuItems.forEach(item => item.display());
+    }
+
+    hide () {
+        this.menuItems.forEach(item => item.hide());
+    }
+
+    update () {
+        this.menuItems.forEach(item => item.update());
+    }
+}
+
+class MenuItemLeft {
+    constructor (position, title, scene) {
+        this.index = position;
+        this.title = title.split(' ');
+        this.scene = scene;
+
+        this.shapes = this.createShape();
+        this.label = this.title.length == 1 ? this.formatTitle(this.title) : this.formatTitleSplit(this.title) ;
+
+        this.position = {
+            y: this.shapes[0].position.y,
+            x: this.shapes[0].position.x + 100
+        };
+
+        this.geometry = {
+            parameters: {
+                width: 100,
+                height: 40
+            }
+        };
+        this.clickActive = true;
+    }
+
+    createShape () {
+        let widthBox = 100;
+        let heightBox = 40;
+        let posXBox = -380;
+        //let posXBox = 0;
+        let posYBox = 190 - (this.index * 45);
+
+        let widthSide = 10;
+        let heightSide = heightBox;
+        let posXSide = (posXBox + (widthBox/2) + (widthSide/2));
+        let posYSide = posYBox;
+        
+        
+        const box = createSimpleBox(posXBox, posYBox, heightBox, widthBox, 10, 0x000000);
+        const side = createSimpleBox(posXSide, posYSide, heightSide, widthSide, 10, 0xFFFFFF);
+
+        this.scene.addToScene(box);
+        this.scene.addToScene(side);
+
+        objects.push(this);
+
+        return [box, side];
+    }
+
+    formatTitle (title) {
+        let label = document.createElement('h2');
+        label.textContent = title;
+        label.style.position = "absolute";
+        label.style.top =  (35 + (this.index * 45)) + "px";
+        label.style.left = ((-380 + 320 - (50))) + "px";
+        label.style.textAlign = "center";
+        label.style.color = "white";
+        label.style.fontSize = "12px";
+        label.style.zIndex = "2000";
+        label.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label.style.visibility = "visible";
+
+        document.body.appendChild(label);
+
+        return [label];
+    }
+
+    formatTitleSplit (title) {
+        let label = document.createElement('h2');
+        label.textContent = title[0];
+        label.style.position = "absolute";
+        label.style.top =  (27 + (this.index * 45)) + "px";
+        label.style.left = ((-380 + 320 - (50))) + "px";
+        label.style.textAlign = "center";
+        label.style.color = "white";
+        label.style.fontSize = "12px";
+        label.style.zIndex = "2000";
+        label.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label.style.visibility = "visible";
+
+        document.body.appendChild(label);
+
+        let label2 = document.createElement('h2');
+        label2.textContent = title[1];
+        label2.style.position = "absolute";
+        label2.style.top =  (42 + (this.index * 45)) + "px";
+        label2.style.left = ((-380 + 320 - (50))) + "px";
+        label2.style.textAlign = "center";
+        label2.style.color = "white";
+        label2.style.fontSize = "12px";
+        label2.style.zIndex = "2000";
+        label2.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label2.style.visibility = "visible";
+
+        document.body.appendChild(label2);
+
+        return [label, label2];
+    }
+
+    async peek () {
+        if (this.shapes[0].position.x <= -380) {
+            let i = 0;
+            while (i < 5) {
+                this.shapes[0].position.x += 4;
+                this.shapes[1].position.x += 4;
+
+                this.label.forEach(label => label.style.left = parseInt(label.style.left) + 4 + "px");
+
+                await new Promise (r => setTimeout(r, 0));
+                i ++;
+            }
+        }
+    }
+
+    async hide () {
+        //this.shapes[0].position.x = 380
+        let i = 0
+        if (this.shapes[0].position.x >= -360) {
+            while (this.shapes[0].position.x >= -380 && i < 10 ) {
+                this.shapes[0].position.x -= 2;
+                this.shapes[1].position.x -= 2;
+
+                this.label.forEach(label => label.style.left = parseInt(label.style.left) - 2 + "px");
+
+                await new Promise (r => setTimeout(r, 0));
+                i++;
+            }
+            i = 0
+        }
+    }
+
+    async display () {
+        //this.shapes[0].position.x = 380 - 120
+        let i = 0
+        while (this.shapes[0].position.x <= -380 + 120 && i < 10) {
+            this.shapes[0].position.x += 4;
+            this.shapes[1].position.x += 4;
+
+            this.label.forEach(label => label.style.left = parseInt(label.style.left) + 4 + "px");
+
+            await new Promise (r => setTimeout(r, 0));
+            i++;
+        }
+    }
+
+    onHover () {
+        if (this.clickActive) {
+
+            this.scene.timeLine.swapGraph(this.index);
+            this.shapes[0].material.color.setHex( 0xFF0000);
+
+            this.clickActive = false;
+
+            setTimeout(() => this.shapes[0].material.color.setHex( 0x000000), 4000);
+            setTimeout(() => this.clickActive = true, 4000);
+        }
+        
+    }
+
+    offHover () {
+
+    }
+
+    update() {
     }
 }
 
@@ -127,10 +520,30 @@ export class TimeLine {
             myChart.canvas.style.visibility = "visible";
         }
     }
+
+    swapGraph (index) {
+        if (this.index === -1) {
+            this.index = index
+
+            this.timeLine[this.index].update();
+            this.timeLine[this.index].display(this.scene);
+
+            myChart.canvas.style.visibility = "visible";
+        } else {
+            this.timeLine[this.index].hide(this.scene);
+
+            this.index = index
+
+            this.timeLine[this.index].update();
+            this.timeLine[this.index].display(this.scene);
+
+            myChart.canvas.style.visibility = "visible";
+        }
+    }
 }
 
 export class BarGraph {
-    constructor(values, title) {
+    constructor(values, title, axisTitles) {
         this.title = document.createElement('h2');
         this.maxVal = Math.max.apply(Math, values.map(elem => elem[1]))
         this.formatTitle(title, 230);
@@ -146,6 +559,9 @@ export class BarGraph {
         this.xLabels = this.formatLabels();
 
         this.yLabels = this.formatYLables();
+
+        this.xAxisTitle = this.formatXTitle(axisTitles[0]);
+        this.yAxisTitle = this.formatYTitle(axisTitles[1]);
     }
 
     createBarGraph(yValues) {
@@ -198,9 +614,6 @@ export class BarGraph {
     }
 
     async display(scene) {
-        // this.graph.forEach(async (shape) => {await new Promise(r => shape.display(scene));
-        //                                      await new Promise (r => setTimeout(r, 1000));
-        //                                     console.log("NEXT")});
         this.title.style.visibility = "visible";
 
         scene.addToScene(this.yAxis);
@@ -208,6 +621,9 @@ export class BarGraph {
 
         this.xLabels.forEach(label => label.style.visibility = "visible")
         this.yLabels.forEach(label => label.style.visibility = "visible")
+
+        this.xAxisTitle.style.visibility = "visible";
+        this.yAxisTitle.style.visibility = "visible";
 
         let group = [];
         let i = 0;
@@ -220,7 +636,10 @@ export class BarGraph {
                 group = [];
             }
             
-            }
+        }
+        await group.map(graph => new Promise(r => graph.display(r, scene)))[Math.ceil(this.yValues.length * 0.020) - 1];
+        group = [];
+
         
     }
 
@@ -233,6 +652,9 @@ export class BarGraph {
 
         this.xLabels.forEach(label => label.style.visibility = "hidden")
         this.yLabels.forEach(label => label.style.visibility = "hidden")
+
+        this.xAxisTitle.style.visibility = "hidden";
+        this.yAxisTitle.style.visibility = "hidden";
     }
 
     formatValues(yValues, maxValue) {
@@ -321,6 +743,45 @@ export class BarGraph {
         return values;
     }
 
+    formatXTitle (title) {
+        var label = document.createElement('h6');
+
+        label.textContent = title;
+        label.style.position = "absolute";
+        label.style.top =  (325) + "px";
+        label.style.left = (450 - ((title.length * 7.8) / 2)) + "px";
+        label.style.textAlign = "center";
+        label.style.color = "white";
+        label.style.fontSize = "15px";
+        label.style.zIndex = "2000";
+        label.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label.style.visibility = "hidden";
+
+        document.body.appendChild(label);
+
+        return label;
+    }
+
+    formatYTitle (title) {
+        var label = document.createElement('h6');
+
+        label.textContent = title;
+        label.style.position = "absolute";
+        label.style.left =  (240 - ((title.length * 7.8) / 2)) + "px";
+        label.style.top = (170) + "px";
+        label.style.textAlign = "center";
+        label.style.color = "white";
+        label.style.fontSize = "15px";
+        label.style.zIndex = "2000";
+        label.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label.style.visibility = "hidden";
+        label.style.transform = "rotate(270deg)";
+
+        document.body.appendChild(label);
+
+        return label;
+    }
+
     update () {
         const xPos = [580, 532, 474, 416, 358, 300]
         this.title.style.top =  (35 + translationY) + "px";
@@ -334,6 +795,20 @@ export class BarGraph {
         const yPositions = [59, 105, 151, 197, 243, 289]
         this.yLabels.forEach((shape, index) => {shape.style.left = (290 - (String(this.yLabels[index].textContent)).length * 9.36 + translationX) + "px";
                                                 shape.style.top = (yPositions[index] + translationY) + "px"})
+        
+        
+
+        this.yAxis.position.x = -22 + translationX;
+        this.yAxis.position.y = 16 - translationY;
+
+        this.xAxis.position.x = 132 + translationX;
+        this.xAxis.position.y = -102 - translationY;
+
+        this.xAxisTitle.style.left = (450 - ((String(this.xAxisTitle.textContent).length * 7.8)/2)) + translationX + "px";
+        this.xAxisTitle.style.top = 325 + translationY + "px";
+
+        this.yAxisTitle.style.left = (240 - ((String(this.yAxisTitle.textContent).length * 7.8)/2)) + translationX + "px";
+        this.yAxisTitle.style.top = 170 + translationY + "px";
     }
 
 }
@@ -416,13 +891,13 @@ class Bar {
                 object.scale.y = maxHeight;
                 object.scale.z = 1;
 
-                object.position.y = object.position.y + (((object.scale.y * object.geometry.parameters.height) - ((currentScale) * object.geometry.parameters.height))/2)
+                //object.position.y = object.position.y + (((object.scale.y * object.geometry.parameters.height) - ((currentScale) * object.geometry.parameters.height))/2)
             } else {
                 object.scale.x = 1;
                 object.scale.y = object.scale.y + 300;
                 object.scale.z = 1;
 
-                object.position.y = object.position.y + (((object.scale.y * object.geometry.parameters.height) - ((object.scale.y-300) * object.geometry.parameters.height))/2)
+                //object.position.y = object.position.y + (((object.scale.y * object.geometry.parameters.height) - ((object.scale.y-300) * object.geometry.parameters.height))/2)
             }
             
 
@@ -443,9 +918,10 @@ class Bar {
 
     hide(scene) {
         const index = objects.indexOf(this);
-        objects.splice(index, 1);
-        
 
+        if (index != -1) {
+            objects.splice(index, 1);
+        }
 
         scene.removeFromScene(this.shape)
     }
@@ -480,11 +956,14 @@ class Bar {
     update() {
         this.valueLabel.style.top = ((170 + (-1 * (- 100 + this.yVal))) + translationY) + "px";
         this.valueLabel.style.left = ((260 + (45 + ((this.index - 1) * this.width + ((3 * this.width)/2) - 20))) + translationX) + "px";
+
+        this.shape.position.x = (((this.index)) * this.width) + (this.width/2) - 20 + translationX;
+        this.shape.position.y = -100 + (this.yVal / 2) - translationY;
     }
 }
 
 export class ScatterGraph {
-    constructor (xyValues, title) {
+    constructor (xyValues, title, axisTitles) {
         this.values = xyValues;
         this.title = document.createElement('h2');
         this.formatTitle(title, 230);
@@ -513,6 +992,9 @@ export class ScatterGraph {
         
         this.xLabels = this.formatLabels();
         this.yLabels = this.formatYLables();
+
+        this.xAxisTitle = this.formatXTitle(axisTitles[0]);
+        this.yAxisTitle = this.formatYTitle(axisTitles[1]);
     }
 
     createGraph() {
@@ -538,6 +1020,45 @@ export class ScatterGraph {
 
         this.values = this.values.map(([x_val, y_val]) => [parseInt(x_val) * this.ratioX - 15, parseInt(y_val) * this.ratioY])
 
+    }
+
+    formatXTitle (title) {
+        var label = document.createElement('h6');
+
+        label.textContent = title;
+        label.style.position = "absolute";
+        label.style.top =  (325) + "px";
+        label.style.left = (450 - ((title.length * 7.8) / 2)) + "px";
+        label.style.textAlign = "center";
+        label.style.color = "white";
+        label.style.fontSize = "15px";
+        label.style.zIndex = "2000";
+        label.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label.style.visibility = "hidden";
+
+        document.body.appendChild(label);
+
+        return label;
+    }
+
+    formatYTitle (title) {
+        var label = document.createElement('h6');
+
+        label.textContent = title;
+        label.style.position = "absolute";
+        label.style.left =  (240 - ((title.length * 7.8) / 2)) + "px";
+        label.style.top = (170) + "px";
+        label.style.textAlign = "center";
+        label.style.color = "white";
+        label.style.fontSize = "15px";
+        label.style.zIndex = "2000";
+        label.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label.style.visibility = "hidden";
+        label.style.transform = "rotate(270deg)";
+
+        document.body.appendChild(label);
+
+        return label;
     }
 
     createYLabel(label, text, position) {
@@ -644,6 +1165,9 @@ export class ScatterGraph {
 
         this.xLabels.forEach(label => label.style.visibility = "visible")
         this.yLabels.forEach(label => label.style.visibility = "visible")
+
+        this.xAxisTitle.style.visibility = "visible";
+        this.yAxisTitle.style.visibility = "visible";
     }
 
     hide(scene) {
@@ -657,6 +1181,9 @@ export class ScatterGraph {
 
         this.xLabels.forEach(label => label.style.visibility = "hidden")
         this.yLabels.forEach(label => label.style.visibility = "hidden")
+
+        this.xAxisTitle.style.visibility = "hidden";
+        this.yAxisTitle.style.visibility = "hidden";
     }
 
     calculateTrendlineSlope() {
@@ -689,6 +1216,23 @@ export class ScatterGraph {
         const yPositions = [59, 105, 151, 197, 243, 289]
         this.yLabels.forEach((shape, index) => {shape.style.left = (290 - (String(this.yLabels[index].textContent)).length * 9.36 + translationX) + "px";
                                                 shape.style.top = (yPositions[index] + translationY) + "px"})
+
+        this.yAxis.position.x = -22 + translationX;
+        this.yAxis.position.y = 16 - translationY;
+
+        this.xAxis.position.x = 132 + translationX;
+        this.xAxis.position.y = -102 - translationY;
+
+        this.graph.forEach(point => point.update());
+
+        this.trendline.position.x = this.minX[0] + ((this.trendlineLength / 2) * Math.sin((Math.PI/2) - Math.atan(this.trendlineSlope))) - 15 + translationX;
+        this.trendline.position.y = (230 * ((this.trendlineSlope * ((this.maxX[0] + this.minX[0])/2)) + this.trendlineIntercept))/300 - 100 - translationY;
+        
+        this.xAxisTitle.style.left = (450 - ((String(this.xAxisTitle.textContent).length * 7.8)/2)) + translationX + "px";
+        this.xAxisTitle.style.top = 325 + translationY + "px";
+
+        this.yAxisTitle.style.left = (240 - ((String(this.yAxisTitle.textContent).length * 7.8)/2)) + translationX + "px";
+        this.yAxisTitle.style.top = 170 + translationY + "px";
     }
     
 
@@ -716,7 +1260,7 @@ export class ScatterGraph {
 }
 
 export class LineGraphMulti {
-    constructor (xyValues, title, seriesTitles) {
+    constructor (xyValues, title, seriesTitles, axisTitles) {
         this.colours = [0xFFFF00, 0xFF0000, 0x3EF4FA, 0x32CD32, 0x6A0DAD, 0xFFA500, 0xffc0cb];
         this.seriesTitles = seriesTitles;
 
@@ -734,7 +1278,7 @@ export class LineGraphMulti {
 
         this.formatValues()
         
-        this.graphs = this.yValues.map((series, index) => new LineGraph(series.map((elem, index) => [this.xValues[index], elem]), this.seriesTitles[index], true, this.colours[index % 7], this.maxVal))
+        this.graphs = this.yValues.map((series, index) => new LineGraph(series.map((elem, index) => [this.xValues[index], elem]), this.seriesTitles[index], "", true, this.colours[index % 7], this.maxVal))
 
         this.yAxis = createSimpleBox(-22,16, 240, 4, 10, 0xFFFFFF);
         this.xAxis = createSimpleBox(132, -102, 4, 308, 10, 0xFFFFFF);
@@ -750,6 +1294,9 @@ export class LineGraphMulti {
         this.seriesLabels = this.formatSeriesLabels();
 
         this.yLabels = this.formatYLables();
+
+        this.xAxisTitle = this.formatXTitle(axisTitles[0]);
+        this.yAxisTitle = this.formatYTitle(axisTitles[1]);
     }
 
     formatValues () {
@@ -783,6 +1330,9 @@ export class LineGraphMulti {
         this.xLabels.forEach(label => label.style.visibility = "visible")
         this.yLabels.forEach(label => label.style.visibility = "visible")
         this.seriesLabels.forEach(label => label.style.visibility = "visible")
+
+        this.xAxisTitle.style.visibility = "visible";
+        this.yAxisTitle.style.visibility = "visible";
     }
 
     hide(scene) {
@@ -794,6 +1344,9 @@ export class LineGraphMulti {
         this.xLabels.forEach(label => label.style.visibility = "hidden")
         this.yLabels.forEach(label => label.style.visibility = "hidden")
         this.seriesLabels.forEach(label => label.style.visibility = "hidden")
+
+        this.xAxisTitle.style.visibility = "hidden";
+        this.yAxisTitle.style.visibility = "hidden";
     }
 
     update () {
@@ -819,7 +1372,59 @@ export class LineGraphMulti {
                                                 shape.style.top = (yPositions[index] + translationY) + "px"})
 
         this.graphs.forEach(graph => graph.update())
+
+        this.yAxis.position.x = -22 + translationX;
+        this.yAxis.position.y = 16 - translationY;
+
+        this.xAxis.position.x = 132 + translationX;
+        this.xAxis.position.y = -102 - translationY;
+
+        this.xAxisTitle.style.left = (450 - ((String(this.xAxisTitle.textContent).length * 7.8)/2)) + translationX + "px";
+        this.xAxisTitle.style.top = 325 + translationY + "px";
+
+        this.yAxisTitle.style.left = (240 - (((String(this.yAxisTitle.textContent).length * 7.8) / 2) )) + translationX + "px";
+        this.yAxisTitle.style.top = 170 + translationY + "px";
     }
+
+    formatXTitle (title) {
+        var label = document.createElement('h6');
+
+        label.textContent = title;
+        label.style.position = "absolute";
+        label.style.top =  (325) + "px";
+        label.style.left = (450 - ((title.length * 7.8) / 2)) + "px";
+        label.style.textAlign = "center";
+        label.style.color = "white";
+        label.style.fontSize = "15px";
+        label.style.zIndex = "2000";
+        label.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label.style.visibility = "hidden";
+
+        document.body.appendChild(label);
+
+        return label;
+    }
+
+    formatYTitle (title) {
+        var label = document.createElement('h6');
+
+        label.textContent = title;
+        label.style.position = "absolute";
+        label.style.left =  (240 - ((title.length * 7.8) / 2)) + "px";
+        label.style.top = (170) + "px";
+        label.style.textAlign = "center";
+        label.style.color = "white";
+        label.style.fontSize = "15px";
+        label.style.zIndex = "2000";
+        label.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label.style.visibility = "hidden";
+        label.style.transform = "rotate(270deg)";
+
+        document.body.appendChild(label);
+
+        return label;
+    }
+
 
     createLabel(label, text, position) {
         label.textContent = text;
@@ -982,7 +1587,7 @@ export class LineGraphMulti {
 }
 
 export class LineGraph {
-    constructor (xyValues, title, partOfMulti = false, colour = 0x3EF4FA, maxY = 0) {
+    constructor (xyValues, title, axisTitles = "", partOfMulti = false, colour = 0x3EF4FA, maxY = 0) {
         this.partOfMulti = partOfMulti;
         this.colour = colour;
 
@@ -1013,6 +1618,8 @@ export class LineGraph {
 
             this.endPoint = new Point(this.endPoint[0] * this.ratioX - 20, this.endPoint[1] * this.ratioY, this.ratioY, String(this.colour).replace("0x", "#"))
             
+            this.xAxisTitle = this.formatXTitle(axisTitles[0]);
+            this.yAxisTitle = this.formatYTitle(axisTitles[1]);
 
             if (!isNaN(xyValues[0][0])) {
                 this.xLabels = this.formatLabels();
@@ -1040,6 +1647,46 @@ export class LineGraph {
     createGraph() {
         return this.xValues.map((elem, i) => new Point(elem, this.yValues[i]))
     }
+
+    formatXTitle (title) {
+        var label = document.createElement('h6');
+
+        label.textContent = title;
+        label.style.position = "absolute";
+        label.style.top =  (325) + "px";
+        label.style.left = (450 - ((title.length * 7.8) / 2)) + "px";
+        label.style.textAlign = "center";
+        label.style.color = "white";
+        label.style.fontSize = "15px";
+        label.style.zIndex = "2000";
+        label.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label.style.visibility = "hidden";
+
+        document.body.appendChild(label);
+
+        return label;
+    }
+
+    formatYTitle (title) {
+        var label = document.createElement('h6');
+
+        label.textContent = title;
+        label.style.position = "absolute";
+        label.style.left =  (240 - ((title.length * 7.8) / 2)) + "px";
+        label.style.top = (170) + "px";
+        label.style.textAlign = "center";
+        label.style.color = "white";
+        label.style.fontSize = "15px";
+        label.style.zIndex = "2000";
+        label.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label.style.visibility = "hidden";
+        label.style.transform = "rotate(270deg)";
+
+        document.body.appendChild(label);
+
+        return label;
+    }
+
 
     formatValues () {
         this.calculateRatios();
@@ -1184,8 +1831,6 @@ export class LineGraph {
     }
 
     async display(scene) {
-        
-        //this.lines.forEach((line) => line.display(scene));
         this.endPoint.display(scene);
 
         if (!this.partOfMulti) {
@@ -1196,6 +1841,9 @@ export class LineGraph {
 
             this.xLabels.forEach(label => label.style.visibility = "visible")
             this.yLabels.forEach(label => label.style.visibility = "visible")
+
+            this.xAxisTitle.style.visibility = "visible";
+            this.yAxisTitle.style.visibility = "visible";
         }
         let group = [];
         let i = 0;
@@ -1209,12 +1857,13 @@ export class LineGraph {
             }
             
         }
+        await group.map(graph => new Promise(r => graph.display(r, scene)))[Math.ceil(this.yValues.length * 0.020) - 1];
+        group = [];
         
 
     }
 
     hide(scene) {
-        // this.graph.forEach((shape) => shape.hide(scene));
         this.lines.forEach((line) => line.hide(scene));
         this.endPoint.hide(scene);
         if (!this.partOfMulti) {
@@ -1225,8 +1874,50 @@ export class LineGraph {
 
             this.xLabels.forEach(label => label.style.visibility = "hidden")
             this.yLabels.forEach(label => label.style.visibility = "hidden")
+
+            this.xAxisTitle.style.visibility = "hidden";
+            this.yAxisTitle.style.visibility = "hidden";
         }
         
+    }
+
+    formatXTitle (title) {
+        var label = document.createElement('h6');
+
+        label.textContent = title;
+        label.style.position = "absolute";
+        label.style.top =  (325) + "px";
+        label.style.left = (450 - ((title.length * 7.8) / 2)) + "px";
+        label.style.textAlign = "center";
+        label.style.color = "white";
+        label.style.fontSize = "15px";
+        label.style.zIndex = "2000";
+        label.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label.style.visibility = "hidden";
+
+        document.body.appendChild(label);
+
+        return label;
+    }
+
+    formatYTitle (title) {
+        var label = document.createElement('h6');
+
+        label.textContent = title;
+        label.style.position = "absolute";
+        label.style.left =  (240 - ((title.length * 7.8) / 2)) + "px";
+        label.style.top = (170) + "px";
+        label.style.textAlign = "center";
+        label.style.color = "white";
+        label.style.fontSize = "15px";
+        label.style.zIndex = "2000";
+        label.style.fontFamily = "Arial, Helvetica, sans-serif";
+        label.style.visibility = "hidden";
+        label.style.transform = "rotate(270deg)";
+
+        document.body.appendChild(label);
+
+        return label;
     }
 
     formatTitle(title, maxY) {
@@ -1249,6 +1940,11 @@ export class LineGraph {
             this.title.style.top =  (35 + translationY) + "px";
             this.title.style.left = (240 + translationX) + "px";
             let xPos = []
+            this.yAxis.position.x = -22 + translationX;
+            this.yAxis.position.y = 16 - translationY;
+
+            this.xAxis.position.x = 132 + translationX;
+            this.xAxis.position.y = -102 - translationY;
             if (isNaN(this.xLabels[0])) {
                 xPos = [580, 532, 474, 416, 358, 300]
             } else {
@@ -1260,10 +1956,19 @@ export class LineGraph {
             
             const yPositions = [59, 105, 151, 197, 243, 289]
             this.yLabels.forEach((shape, index) => {shape.style.left = (290 - (String(this.yLabels[index].textContent)).length * 9.36 + translationX) + "px";
-                                                    shape.style.top = (yPositions[index] + translationY) + "px"})
+            shape.style.top = (yPositions[index] + translationY) + "px"})
+            
+            this.xAxisTitle.style.left = (450 - ((String(this.xAxisTitle.textContent).length * 7.8)/2)) + translationX + "px";
+            this.xAxisTitle.style.top = 325 + translationY + "px";
+
+            this.yAxisTitle.style.left = (240 - ((String(this.yAxisTitle.textContent).length * 7.8)/2)) + translationX + "px";
+            this.yAxisTitle.style.top = 170 + translationY + "px";
+
+
        
         }
         this.endPoint.update();
+        this.lines.forEach(line => line.update());
     }
 }
 
@@ -1304,8 +2009,6 @@ class JoiningLine {
 
         await new Promise (r => setTimeout(r, 0));
 
-        console.log("HI")
-
         //await new Promise (r => this.animate(r, this.shape, this.length))
 
         return r("done")
@@ -1317,7 +2020,6 @@ class JoiningLine {
         while ((object.scale.x * object.geometry.parameters.width) < maxHeight) {
             if (((object.scale.x + 300) * object.geometry.parameters.width) > maxHeight) {
                 let currentScale = object.scale.x
-                console.log(Math.cos(this.rotation))
                 object.scale.x = Math.cos(this.roation) * maxHeight;
                 object.scale.y = Math.sin(this.roation) * maxHeight;;
                 object.scale.z = 1;
@@ -1334,32 +2036,24 @@ class JoiningLine {
             break;
         }
         return r("done");
-        // if ((shape.scale.y * shape.geometry.parameters.height) >= maxHeight) {
-            
-        // } else { 
-
-           
-
-        //     this.animate(r, shape, maxHeight)
-        // }
     }
 
     hide(scene) {
-        //const index = objects.indexOf(this);
-        //objects.splice(index, 1);
-        
         scene.removeFromScene(this.shape)
     }
 
     onHover() {
-        //this.shape.material.color.setHex( 0xFF0000);
     }
 
     offHover() {
-        //this.shape.material.color.setHex( this.colour);
     }
 
     onClick() {
+    }
+
+    update () {
+        this.shape.position.x = this.startingCoord[0] + ((this.length / 2) * Math.sin((Math.PI/2) - this.roation)) + translationX;
+        this.shape.position.y = (this.finishCoord[1] + this.startingCoord[1])/2 - 100 - translationY;
     }
 }
 
@@ -1483,6 +2177,9 @@ class Point {
             this.seriesTitle.style.top =  (275 - this.yVal) + translationY + "px";
             this.seriesTitle.style.left = (610 - (6.24 * this.title.length)) + translationX + "px";
         }
+
+        this.shape.position.x = this.xVal + translationX;
+        this.shape.position.y = this.yVal -100 - translationY;
         
     }
 }
@@ -1644,32 +2341,19 @@ class State {
     }
 
     display (scene) {
-        //objects.push(this)
         this.valueLabel.style.visibility = "visible";
         scene.addToScene(this.state);
     }   
 
     hide (scene) {
-        //const index = objects.indexOf(this);
-        //objects.splice(index, 1);
         this.valueLabel.style.visibility = "hidden";
         scene.removeFromScene(this.state);
     }
 
     onHover() {
-        // this.state.traverse((object) => {
-        //     if (object.isMesh) {
-        //         object.material.color.set( 0xFF0000 )
-        //     }
-        // })
     }
 
     offHover() {
-        // this.state.traverse((object) => {
-        //     if (object.isMesh) {
-        //         object.material.color.set( 0x3EF4FA )
-        //     }
-        // })
     }
 
     update () {
@@ -1678,24 +2362,45 @@ class State {
         if (this.filePath === "VictoriaModel.glb") {
             this.valueLabel.style.top =  (240 + translationY) + "px";
             this.valueLabel.style.left = (510 + translationX) - (len * 5) + "px";
+            
+            this.state.position.x = 195 + translationX;
+            this.state.position.y = -57 - translationY;
         } else if (this.filePath === "NSWModel.glb") {
             this.valueLabel.style.top =  (200 + translationY) + "px";
             this.valueLabel.style.left = (520 + translationX) - (len * 5)  + "px";
+
+            this.state.position.x = 202 + translationX;
+            this.state.position.y = -19 - translationY;;
         } else if (this.filePath === "QLDModel.glb") {
             this.valueLabel.style.top =  (130 + translationY) + "px";
             this.valueLabel.style.left = (500 + translationX) - (len * 5)  + "px";
+
+            this.state.position.x = 188 + translationX;
+            this.state.position.y = 46 - translationY;;
         } else if (this.filePath === "SAModel.glb") {
             this.valueLabel.style.top =  (180 + translationY) + "px";
             this.valueLabel.style.left = (440 + translationX) - (len * 5)  + "px";
+
+            this.state.position.x = 128 + translationX;
+            this.state.position.y = -1 - translationY;;
         } else if (this.filePath === "NTModel.glb") {
             this.valueLabel.style.top =  (115 + translationY) + "px";
             this.valueLabel.style.left = (435 + translationX) - (len * 5)  + "px";
+
+            this.state.position.x = 118 + translationX;
+            this.state.position.y = 70 - translationY;;
         } else if (this.filePath === "WAModel.glb") {
             this.valueLabel.style.top =  (160 + translationY) + "px";
             this.valueLabel.style.left = (355 + translationX) - (len * 5)  + "px";
+
+            this.state.position.x = 48 + translationX;
+            this.state.position.y = 30 - translationY;;
         } else if (this.filePath === "TasmaniaModel.glb") {
             this.valueLabel.style.top =  (275 + translationY) + "px";
             this.valueLabel.style.left = (515 + translationX) - (len * 5)  + "px";
+
+            this.state.position.x = 200 + translationX;
+            this.state.position.y = -95 - translationY;
         }
     }
 }
@@ -1773,30 +2478,21 @@ class DrawingLine {
         box.rotation.z = this.roation;
         box.position.z = 5;
 
-        //box.material.color = this.colour;
-
         return box;
     }
 
     display(scene) {
-        //objects.push(this);
-
         scene.addToScene(this.shape);
     }
 
     hide(scene) {
-        //const index = objects.indexOf(this);
-        //objects.splice(index, 1);
-        
         scene.removeFromScene(this.shape)
     }
 
     onHover() {
-        //this.shape.material.color.setHex( 0xFF0000);
     }
 
     offHover() {
-        //this.shape.material.color.setHex( this.colour);
     }
 
     onClick() {
@@ -1853,7 +2549,6 @@ export class Button {
     }
 
     offHover() {
-        //this.button.material.color.setHex( 0xFFCC00);
     }
 
     resetColour (button){ return () => button.material.color.setHex( 0x808080);}
@@ -1965,6 +2660,7 @@ let positions = []
 let positionsY = []
 let fistX = 1000;
 let fistY = 1000;
+let fistZ = 100;
 let translationX = 0;
 let translationY = 0;
 
@@ -1972,13 +2668,36 @@ export function fingerPositionProcessor(scene, handValues) {
     const shape = getHandShape(handValues);
 
     document.getElementById("chartLegend").style.opacity = .4;
+    if (translationX <= -140) {
+        scene.menuLeft.hide();
+        if (handValues[8][0] > 100 && handValues[8][0] <= 160) {
+            scene.menuRight.peek();
+        } else if (handValues[8][0] > 160) {
+            scene.menuRight.display();
+        }else {
+            scene.menuRight.hide();
+        }
+    } else {
+        scene.menuRight.hide();
+        if (handValues[8][0] < -100 && handValues[8][0] >= -160) {
+            scene.menuLeft.peek();
+        } else if (handValues[8][0] < -160) {
+            scene.menuLeft.display();
+        }else {
+            scene.menuLeft.hide();
+        }
+    }
+    
+
     if (shape === "fist") {
+        
         positionsY = []
         scene.draw.removePrevious();
         objects.forEach(elem => elem.offHover());
         if (fistX === 1000) {
             fistX = handValues[9][0];
             fistY = handValues[9][1];
+            fistZ = handValues[9][1];
         }
 
         if (scene.timeLine.index >= 0) {
@@ -2001,14 +2720,14 @@ export function fingerPositionProcessor(scene, handValues) {
                     if (translationX < -225) {
                         translationX = -225
                     } 
-                    if (translationY > 115) {
-                        translationY = 115
+                    if (translationY > 100) {
+                        translationY = 100
                     } 
-                    if (translationY < -50) {
-                        translationY = -50
+                    if (translationY < -45) {
+                        translationY = -45
                     }
-                    scene.renderer.domElement.style.top = translationY + "px";
-                    scene.renderer.domElement.style.left = translationX + "px";
+                    //scene.renderer.domElement.style.top = translationY + "px";
+                    //scene.renderer.domElement.style.left = translationX + "px";
 
                     document.getElementById("chartLegend").style.top = (50 + translationY) + "px";
                     document.getElementById("chartLegend").style.left = (225 + translationX) + "px";
@@ -2030,9 +2749,6 @@ export function fingerPositionProcessor(scene, handValues) {
 
         const pointerX = handValues[8][0] - translationX;
         const pointerY = handValues[8][1] + translationY;
-
-        const thumbX = handValues[4][0] - translationX;
-        const thumbY = handValues[4][1] + translationY;
         
     
         objects.forEach(elem => isFingerOnShape(elem, pointerX, pointerY) 
@@ -2050,7 +2766,7 @@ export function fingerPositionProcessor(scene, handValues) {
         positionsY.push(handValues[0][1])
         
         if (handValues[0][0] < (positions[1] - 100)) {
-            scene.nextPane();
+            //scene.nextPane();
             positions = []
         } else {
             setTimeout(() => positions.shift(), 2000)
@@ -2068,9 +2784,14 @@ export function fingerPositionProcessor(scene, handValues) {
 }
 
 function isFingerOnShape(shape, pointerX, pointerY) {
-    const shapeX = shape.position.x;
-    const shapeY = shape.position.y;
-
+    let shapeX, shapeY;
+    if (shape instanceof MenuItemRight || shape instanceof MenuItemLeft ) {
+        shapeX = shape.position.x - translationX;
+        shapeY = shape.position.y + translationY;
+    } else {
+        shapeX = shape.position.x;
+        shapeY = shape.position.y;
+    }
     const shapeWidth = shape.geometry.parameters["width"];
     const shapeHeight = shape.geometry.parameters["height"];
 
@@ -2078,7 +2799,8 @@ function isFingerOnShape(shape, pointerX, pointerY) {
     const shapeEndX = shapeX + (shapeWidth / 2);
 
     const shapeStartY = shapeY - (shapeHeight / 2);
-    const shapeEndY = shapeY+ (shapeHeight / 2);
+    const shapeEndY = shapeY + (shapeHeight / 2);
+    
 
     if (pointerX > shapeStartX && pointerX < shapeEndX) {
         if (pointerY > shapeStartY && pointerY < shapeEndY) {

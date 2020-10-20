@@ -8,7 +8,7 @@ import * as FILTER from './OneEuroFilter.js'
 
 //document.body.appendChild(stats.dom);
 
-
+// document.getElementById("exit").onclick = hideWelcome;
 const slider = document.getElementById("myRange");
 
 const filters = [...Array(21).keys()].map((_ => [new FILTER.LowPassFilter(0.5), new FILTER.LowPassFilter(0.5), new FILTER.LowPassFilter(0.5)]));
@@ -80,17 +80,24 @@ animate();
 
 export function addGraphFromFile(graphData, title, type) {
     let graph;
+    console.log(graphData)
     if (type === 'bar') {
-        graph = new INTERFACE.BarGraph(graphData, title)
+        graph = new INTERFACE.BarGraph(graphData[0], title, graphData[1])
     } else if (type === 'scatter') {
         graph = new INTERFACE.ScatterGraph(graphData, title)
     } else if (type === 'line') {
-        graph = new INTERFACE.LineGraph(graphData, title)
+        graph = new INTERFACE.LineGraph(graphData[0], title, graphData[1])
     } else if (type === "australia") {
         graph = new INTERFACE.Australia(graphData, title)
     } else if (type === "multiLine") {
-        graph = new INTERFACE.LineGraphMulti(graphData[1][0], title, graphData[0])
+        graph = new INTERFACE.LineGraphMulti(graphData[1][0], title, graphData[0], graphData[2])
     }
     
     scene.addToTimeLine(graph)
+}
+
+function hideWelcome() {
+    document.getElementById("welcomePage").style.visibility = "hidden";
+    document.getElementById("message").style.visibility = "hidden";
+    document.getElementById("exit").style.visibility = "hidden";
 }

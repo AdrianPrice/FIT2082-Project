@@ -32,19 +32,28 @@ function formatData(data) {
   if (document.getElementById("Bar").checked || document.getElementById("Line").checked) {
     
     let dataVal = data.split('\n');
+    let axisTitles = dataVal[0].split(",");
+
+    dataVal.splice(0,1);
     dataVal = dataVal.map(elem => elem.split(","))
     dataVal = dataVal.map(elem => [elem[0], parseFloat(elem[1])])
-    return dataVal;
+    return [dataVal, axisTitles];
   } else if (document.getElementById("Scatter").checked) {
     let dataVal = data.split('\n');
+    let axisTitles = dataVal[0].split(",");
+
+    dataVal.splice(0,1);
     dataVal = dataVal.map(elem => elem.split(","))
     dataVal = dataVal.map(elem => [parseInt(elem[0]), parseInt(elem[1])])
-    return dataVal;
+    return [dataVal, axisTitles];
   } else if (document.getElementById("Australia").checked) {
     let dataVal = data.split('\n');
     return dataVal;
   } else if (document.getElementById("multiLine").checked) {
     let dataVal = data.split('\n\n');
+    let axisTitles = dataVal[0].split(",");
+    dataVal.splice(0, 1);
+
     let seriesTitles = dataVal[0].split('\n');
     let datas = dataVal.slice(1);
     datas = datas.map(series => series.split('\n'));
@@ -52,7 +61,7 @@ function formatData(data) {
     datas = datas.map(series => series.map(elem => elem.split(",")))
     datas = datas.map(series => series.map(elem => [elem[0], parseFloat(elem[1])]))
 
-    return [seriesTitles, [datas]]
+    return [seriesTitles, [datas], axisTitles]
   }
 }
 
@@ -68,7 +77,6 @@ function addGraph() {
         document.getElementById("Bar").checked = false;
       } else if (document.getElementById("Scatter").checked) {
         document.getElementById("Scatter").checked = false;
-        console.log(formattedContent)
         GRAPHING.addGraphFromFile(formattedContent, title, 'scatter')
       } else if (document.getElementById("Line").checked) {
         document.getElementById("Line").checked = false;
