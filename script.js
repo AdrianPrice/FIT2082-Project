@@ -2766,7 +2766,7 @@ export function fingerPositionProcessor(scene, handValues) {
         positionsY.push(handValues[0][1])
         
         if (handValues[0][0] < (positions[1] - 100)) {
-            //scene.nextPane();
+            scene.nextPane();
             positions = []
         } else {
             setTimeout(() => positions.shift(), 2000)
