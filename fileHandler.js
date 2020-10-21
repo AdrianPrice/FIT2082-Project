@@ -51,10 +51,13 @@ function formatData(data) {
     return dataVal;
   } else if (document.getElementById("multiLine").checked) {
     let dataVal = data.split('\n\n');
+    console.log(dataVal)
     let axisTitles = dataVal[0].split(",");
     dataVal.splice(0, 1);
 
     let seriesTitles = dataVal[0].split('\n');
+    seriesTitles = seriesTitles.slice(1)
+    console.log(seriesTitles)
     let datas = dataVal.slice(1);
     datas = datas.map(series => series.split('\n'));
     datas.forEach(series => series.shift())

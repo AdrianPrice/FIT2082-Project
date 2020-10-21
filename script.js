@@ -7,6 +7,8 @@ const filter = new FILTER.LowPassFilter(0.3)
 
 var myChart = document.getElementById('chartLegend').getContext('2d');
 
+var graphChangeable = true;
+
 export class Scene {
     constructor() {
         this.scene = this.createScene();
@@ -236,7 +238,7 @@ class MenuItemRight {
 
     async hide () {
         let i = 0
-        if (this.shapes[0].position.x <= 360) {
+        if (this.shapes[0].position.x < 380) {
             while (this.shapes[0].position.x <= 380 && i < 10 ) {
                 this.shapes[0].position.x += 2;
                 this.shapes[1].position.x += 2;
@@ -496,6 +498,13 @@ export class TimeLine {
 
     next() {
         //myChart.canvas.style.visibility = "hidden";
+
+        if (!graphChangeable) {
+            return;
+        } else {
+            graphChangeable = false;
+            setTimeout (() => graphChangeable = true, 5000)
+        }
         
         if (this.index + 1 < this.timeLine.length) {
             if (this.index === -1) {
@@ -522,6 +531,14 @@ export class TimeLine {
     }
 
     swapGraph (index) {
+
+        if (!graphChangeable) {
+            return;
+        } else {
+            graphChangeable = false;
+            setTimeout (() => graphChangeable = true, 5000)
+        }
+        
         if (this.index === -1) {
             this.index = index
 
@@ -1444,6 +1461,8 @@ export class LineGraphMulti {
     }
 
     createSeriesLabel(label, text, position, colour) {
+        console.log(colour)
+        console.log(text)
         const colourList = ["#FFFF00", "#FF0000", "#3EF4FA", "#32CD32", "#6A0DAD", "#FFA500", "#ffc0cb"];
 
         let label2 = label
