@@ -1,6 +1,6 @@
 import * as LAUNCHER from './launcher.js'    
 import * as FILTER from './OneEuroFilter.js'
-import { OrbitControls } from "https://threejs.org/examples/jsm/controls/OrbitControls.js";
+import * as INCLUSION from './crossingNumbers.js'
 
 const objects = [];
 const filter = new FILTER.LowPassFilter(0.3)
@@ -266,6 +266,7 @@ class MenuItemRight {
     }
 
     onHover () {
+        console.log("BYE")
         if (this.clickActive) {
 
             this.scene.timeLine.swapGraph(this.index);
@@ -435,7 +436,7 @@ class MenuItemLeft {
     async hide () {
         //this.shapes[0].position.x = 380
         let i = 0
-        if (this.shapes[0].position.x >= -360) {
+        if (this.shapes[0].position.x >= -380) {
             while (this.shapes[0].position.x >= -380 && i < 10 ) {
                 this.shapes[0].position.x -= 2;
                 this.shapes[1].position.x -= 2;
@@ -2102,6 +2103,8 @@ class Point {
             x: this.shape.position.x
         };
 
+        this.ray = new INCLUSION.Ray(this.shape.position.x, this.shape.position.y, 0);
+
         if (this.isLine) {
             this.valueLabel = document.createElement('h6');
             this.formatValueLabel();
@@ -2684,7 +2687,10 @@ let translationX = 0;
 let translationY = 0;
 
 export function fingerPositionProcessor(scene, handValues) {
-    const shape = getHandShape(handValues);
+    if (multiSelection) {
+        shapeInclusion(objects, handValues, scene)
+    } else {
+        const shape = getHandShape(handValues);
 
     document.getElementById("chartLegend").style.opacity = .4;
     if (translationX <= -140) {
@@ -2770,7 +2776,7 @@ export function fingerPositionProcessor(scene, handValues) {
         const pointerY = handValues[8][1] + translationY;
         
     
-        objects.forEach(elem => isFingerOnShape(elem, pointerX, pointerY) 
+        objects.forEach(elem => isFingerOnShape(elem, handValues) 
                                     ? elem.onHover() 
                                     : elem.offHover());
         }
@@ -2798,15 +2804,24 @@ export function fingerPositionProcessor(scene, handValues) {
             setTimeout(() => positionsY.shift(), 2000)
         }
     }     
+    }
+    
     
     
 }
 
-function isFingerOnShape(shape, pointerX, pointerY) {
+function isFingerOnShape(shape, handValues) {
+    let pointerX = handValues[8][0];
+    let pointerY = handValues[8][1];
     let shapeX, shapeY;
-    if (shape instanceof MenuItemRight || shape instanceof MenuItemLeft ) {
-        shapeX = shape.position.x - translationX;
-        shapeY = shape.position.y + translationY;
+    if (shape instanceof MenuItemRight) {
+        console.log(pointerX)
+        shapeX = shape.position.x;
+        shapeY = shape.position.y;
+        console.log(shapeX)
+    } else if (shape instanceof MenuItemLeft) {
+        shapeX = shape.position.x;
+        shapeY = shape.position.y;
     } else {
         shapeX = shape.position.x;
         shapeY = shape.position.y;
@@ -2827,6 +2842,39 @@ function isFingerOnShape(shape, pointerX, pointerY) {
         } 
     }
     return false;
+}
+
+function shapeInclusion (objects, handValues, scene) {
+    let equations = []
+
+    equations.push(new INCLUSION.Equation(handValues[4][0], handValues[4][1], handValues[0][0], handValues[0][1]));
+    equations.push(new INCLUSION.Equation(handValues[4][0], handValues[4][1], handValues[8][0], handValues[8][1]));
+    equations.push(new INCLUSION.Equation(handValues[8][0], handValues[8][1], handValues[12][0], handValues[12][1]));
+    equations.push(new INCLUSION.Equation(handValues[12][0], handValues[12][1], handValues[16][0], handValues[16][1]));
+    equations.push(new INCLUSION.Equation(handValues[16][0], handValues[16][1], handValues[20][0], handValues[20][1]));
+    equations.push(new INCLUSION.Equation(handValues[0][0], handValues[0][1], handValues[20][0], handValues[20][1]));
+
+    // let lines = []
+    // lines.push(new JoiningLine(handValues[4][0], handValues[4][1]+100, handValues[0][0], handValues[0][1]+100).shape)
+    // lines.push(new JoiningLine(handValues[4][0], handValues[4][1]+100, handValues[8][0], handValues[8][1]+100).shape)
+    // lines.push(new JoiningLine(handValues[8][0], handValues[8][1]+100, handValues[12][0], handValues[12][1]+100).shape)
+    // lines.push(new JoiningLine(handValues[12][0], handValues[12][1]+100, handValues[16][0], handValues[16][1]+100).shape)
+    // lines.push(new JoiningLine(handValues[16][0], handValues[16][1]+100, handValues[20][0], handValues[20][1]+100).shape)
+    // lines.push(new JoiningLine(handValues[0][0], handValues[0][1]+100, handValues[20][0], handValues[20][1]+100).shape)
+
+    // lines.forEach(elem => scene.addToScene(elem))
+
+    // setTimeout(() => lines.forEach(elem => scene.removeFromScene(elem)), 5)
+
+    let points = objects.filter(elem => (elem instanceof Point));
+
+    points.forEach(point => {
+        if (point.ray.insideShape(equations)) {
+            point.onHover();
+        } else {
+            point.offHover();
+        }
+    })
 }
 
 function getHandShape (handPositions) {
@@ -2873,5 +2921,18 @@ document.addEventListener("keydown", event => {
   document.addEventListener("keyup", event => {
     if (event.key === 'd') {
       isDrawing = false;
+    }
+  });
+
+let multiSelection = false;
+document.addEventListener("keydown", event => {
+    if (event.key === 's') {
+        multiSelection = true;
+    }
+  });
+
+  document.addEventListener("keyup", event => {
+    if (event.key === 's') {
+        multiSelection = false;
     }
   });
